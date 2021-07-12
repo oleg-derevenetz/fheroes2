@@ -1,1 +1,1 @@
-Checks: '-*,bugprone-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,readability-*,-readability-avoid-const-params-in-decls'
+Checks: '-*,bugprone-*,cppcoreguidelines-*,misc-*,modernize-*,performance-*,readability-*'
