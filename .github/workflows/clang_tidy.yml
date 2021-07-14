@@ -14,6 +14,7 @@ jobs:
       with:
         repository: ${{ github.event.pull_request.head.repo.full_name }}
         ref: ${{ github.event.pull_request.head.ref }}
+        persist-credentials: false
     - name: Prepare compile_commands.json
       run: |
         # Generate the compile_commands.json in a naive way, don't use anything that can run scripts supplied by untrusted forks (i.e. CMake)
