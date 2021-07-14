@@ -65,7 +65,7 @@ public:
         return knowledge * 10;
     }
 
-    void ActionPreBattle() override;
+    void ActionPreBattle( void ) override;
     void ActionAfterBattle() override;
 
     void PortraitRedraw( s32 px, s32 py, PortraitType type, fheroes2::Image & dstsf ) const override;

@@ -169,7 +169,7 @@ void Captain::ActionAfterBattle( void )
     SetSpellPoints( GetMaxSpellPoints() );
 }
 
-void Captain::ActionPreBattle( void )
+void Captain::ActionPreBattle( void ) //
 {
     SetSpellPoints( GetMaxSpellPoints() );
 }
