@@ -2,7 +2,7 @@ name: Clang-Tidy
 
 on:
   pull_request_target:
-    branches: [ master ]
+    branches: [ master, clang-tidy-secure ]
     paths: [ '**.cpp', '**.h' ]
 
 jobs:
