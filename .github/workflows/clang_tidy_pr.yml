@@ -20,4 +20,4 @@ jobs:
     - name: Analyze
       run: |
         ls -l /usr/bin/*tidy*
-        git diff -U0 HEAD^ | clang-tidy-diff.py -p1 -export-fixes clang-tidy-fixes.yml
+        git diff -U0 HEAD^ | clang-tidy-diff -p1 -export-fixes clang-tidy-fixes.yml
