@@ -2,7 +2,7 @@ name: Clang-Tidy PR Comments
 
 on:
   workflow_run:
-    workflows: ["Clang-Tidy PR"]
+    workflows: [ "Clang-Tidy PR" ]
     types: [ completed ]
 
 jobs:
