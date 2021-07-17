@@ -38,10 +38,13 @@ jobs:
         echo "pr_id=$(cat clang-tidy-result/pr-id.txt)" >> $GITHUB_ENV
         echo "pr_head_repo=$(cat clang-tidy-result/pr-head-repo.txt)" >> $GITHUB_ENV
         echo "pr_head_ref=$(cat clang-tidy-result/pr-head-ref.txt)" >> $GITHUB_ENV
+    - run: ls -l
     - uses: actions/checkout@v2
       with:
         repository: ${{ env.pr_head_repo }}
         ref: ${{ env.pr_head_ref }}
+        persist-credentials: false
+    - run: ls -l
     - uses: oleg-derevenetz/clang-tidy-pr-comments@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
