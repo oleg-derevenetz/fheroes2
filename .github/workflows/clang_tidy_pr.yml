@@ -27,9 +27,9 @@ jobs:
     - name: Analyze
       run: |
         git diff -U0 HEAD^ | clang-tidy-diff -p1 -path build -export-fixes result/clang-tidy-fixes.yml
-    - name: Save PR number
+    - name: Save PR id
       run: |
-        echo ${{ github.event.number }} > result/pr-number.txt
+        echo ${{ github.event.number }} > result/pr-id.txt
     - uses: actions/upload-artifact@v2
       with:
         name: result
