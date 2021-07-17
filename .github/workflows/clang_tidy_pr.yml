@@ -23,14 +23,16 @@ jobs:
         cmake -B build -DCMAKE_BUILD_TYPE=Release -DUSE_SDL_VERSION=SDL2 -DENABLE_IMAGE=ON -DENABLE_UNICODE=ON -DENABLE_TOOLS=ON -DFHEROES2_STRICT_COMPILATION=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
     - name: Prepare result directory
       run: |
-        mkdir result
+        mkdir clang-tidy-result
     - name: Analyze
       run: |
-        git diff -U0 HEAD^ | clang-tidy-diff -p1 -path build -export-fixes result/clang-tidy-fixes.yml
-    - name: Save PR id
+        git diff -U0 HEAD^ | clang-tidy-diff -p1 -path build -export-fixes clang-tidy-result/fixes.yml
+    - name: Save PR properties
       run: |
-        echo ${{ github.event.number }} > result/pr-id.txt
+        echo ${{ github.event.number }} > clang-tidy-result/pr-id.txt
+        echo ${{ github.event.pull_request.head.repo.full_name }} > clang-tidy-result/pr-head-repo.txt
+        echo ${{ github.event.pull_request.head.ref }} > clang-tidy-result/pr-head-ref.txt
     - uses: actions/upload-artifact@v2
       with:
-        name: result
-        path: result/
+        name: clang-tidy-result
+        path: clang-tidy-result/
