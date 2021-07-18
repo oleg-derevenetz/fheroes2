@@ -222,7 +222,7 @@ public:
     std::string String( void ) const;
 
     int DialogBuyHero( const Heroes * ) const;
-    int DialogBuyCastle( bool fixed = true ) const;
+    int DialogBuyCastle( const bool fixed = true ) const;
 
     void SwapCastleHeroes( CastleHeroes & );
 
