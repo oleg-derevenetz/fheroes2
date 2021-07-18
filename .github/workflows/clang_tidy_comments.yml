@@ -1,8 +1,8 @@
-name: Clang-Tidy PR Comments
+name: Clang-Tidy Comments
 
 on:
   workflow_run:
-    workflows: [ "Clang-Tidy PR" ]
+    workflows: [ Clang-Tidy ]
     types: [ completed ]
 
 jobs:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' }}
     steps:
-    - name: Download the results of the analysis
+    - name: Download analysis results
       uses: actions/github-script@v3.1.0
       with:
         script: |
@@ -27,11 +27,11 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: matchArtifact.id,
-              archive_format: 'zip',
+              archive_format: "zip",
           });
-          let fs = require('fs');
-          fs.writeFileSync('${{github.workspace}}/clang-tidy-result.zip', Buffer.from(download.data));
-    - name: Setup environment
+          let fs = require("fs");
+          fs.writeFileSync("${{github.workspace}}/clang-tidy-result.zip", Buffer.from(download.data));
+    - name: Set environment variables
       run: |
         mkdir clang-tidy-result
         unzip clang-tidy-result.zip -d clang-tidy-result
@@ -43,7 +43,7 @@ jobs:
         repository: ${{ env.pr_head_repo }}
         ref: ${{ env.pr_head_ref }}
         persist-credentials: false
-    - name: Redownload the results of the analysis
+    - name: Redownload analysis results
       uses: actions/github-script@v3.1.0
       with:
         script: |
@@ -59,11 +59,11 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               artifact_id: matchArtifact.id,
-              archive_format: 'zip',
+              archive_format: "zip",
           });
-          let fs = require('fs');
-          fs.writeFileSync('${{github.workspace}}/clang-tidy-result.zip', Buffer.from(download.data));
-    - name: Extract the results of the analysis
+          let fs = require("fs");
+          fs.writeFileSync("${{github.workspace}}/clang-tidy-result.zip", Buffer.from(download.data));
+    - name: Extract analysis results
       run: |
         mkdir clang-tidy-result
         unzip clang-tidy-result.zip -d clang-tidy-result
