@@ -202,7 +202,7 @@ public:
     // when hover over the building
     std::string buildingStatusMessage( const uint32_t buildingId ) const;
 
-    static const char * GetStringBuilding( u32, int race );
+    static const char * GetStringBuilding( u32, const int race );
     static const char * GetDescriptionBuilding( u32, int race );
 
     static int GetICNBuilding( u32, int race );
