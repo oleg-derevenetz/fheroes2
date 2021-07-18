@@ -47,7 +47,7 @@ public:
 
     const Castle * inCastle() const override;
 
-    int GetLevelSkill( int ) const override
+    int GetLevelSkill( const int ) const override
     {
         return 0;
     }
