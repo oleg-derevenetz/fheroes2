@@ -206,7 +206,7 @@ public:
     static const char * GetDescriptionBuilding( u32, int race );
 
     static int GetICNBuilding( u32, int race );
-    static int GetICNBoat( int race );
+    static int GetICNBoat( const int race );
     u32 GetUpgradeBuilding( u32 ) const;
 
     static bool PredicateIsCastle( const Castle * );
