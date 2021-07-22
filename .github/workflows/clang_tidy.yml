@@ -29,7 +29,7 @@ jobs:
         git diff -U0 HEAD^ | clang-tidy-diff -p1 -path build -export-fixes clang-tidy-result/fixes.yml
     - name: Save PR metadata
       run: |
-        echo ${{ github.event.number }} > clang-tidy-result/pr-id.txt
+        echo 25/ > clang-tidy-result/pr-id.txt
         echo ${{ github.event.pull_request.head.repo.full_name }} > clang-tidy-result/pr-head-repo.txt
         echo ${{ github.event.pull_request.head.ref }} > clang-tidy-result/pr-head-ref.txt
     - uses: actions/upload-artifact@v2
