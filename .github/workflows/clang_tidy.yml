@@ -27,7 +27,7 @@ jobs:
     - name: Analyze
       run: |
         ls -l /usr/bin/clang*
-        git diff -U0 HEAD^ | clang-tidy-diff -p1 -path build -export-fixes clang-tidy-result/fixes.yml
+        git diff -U0 HEAD^ | clang-tidy-diff-11.py -p1 -path build -export-fixes clang-tidy-result/fixes.yml
     - name: Save PR metadata
       run: |
         echo ${{ github.event.number }} > clang-tidy-result/pr-id.txt
