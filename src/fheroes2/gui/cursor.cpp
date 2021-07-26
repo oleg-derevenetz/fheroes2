@@ -231,7 +231,7 @@ int Cursor::WithoutDistanceThemes( const int theme )
 }
 
 CursorRestorer::CursorRestorer()
-    : _theme( Cursor::Get().Themes() )
+    : _theme(Cursor::Get().Themes() )
     , _visible( fheroes2::cursor().isVisible() )
 {}
 
