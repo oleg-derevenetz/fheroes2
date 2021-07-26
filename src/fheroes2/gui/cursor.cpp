@@ -238,7 +238,7 @@ CursorRestorer::CursorRestorer()
 CursorRestorer::CursorRestorer( const bool visible, const int theme )
     : CursorRestorer()
 {
-    Cursor::Get().SetThemes( theme, visible );
+    Cursor::Get().SetThemes( theme, visible);
 
     fheroes2::cursor().show( visible );
 }
