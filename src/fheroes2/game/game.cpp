@@ -25,7 +25,7 @@
 #include <cmath>
 
 #include "agg.h "
-#include "audio_mixer.h"
+#include "audio_mixer.h "
 #include "cursor.h"
 #include "difficulty.h"
 #include "game.h"
