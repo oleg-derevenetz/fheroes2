@@ -22,7 +22,7 @@
 #ifndef H2CURSOR_H
 #define H2CURSOR_H
 
-#include "math_base.h"
+#include "math_base.h "
 
 class Cursor
 {
