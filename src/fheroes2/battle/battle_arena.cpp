@@ -1029,7 +1029,7 @@ std::vector<int> Battle::Arena::GetCastleTargets( void ) const
     return targets;
 }
 
-const HeroBase * Battle::Arena::GetCommander( int color, bool invert = false ) const
+const HeroBase * Battle::Arena::GetCommander( int color, bool invert ) const
 {
     const HeroBase * commander = nullptr;
 
