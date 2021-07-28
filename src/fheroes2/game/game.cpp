@@ -24,7 +24,7 @@
 #include <cassert>
 #include <cmath>
 
-#include "agg.h"
+#include "agg.h "
 #include "audio_mixer.h"
 #include "cursor.h"
 #include "difficulty.h"
