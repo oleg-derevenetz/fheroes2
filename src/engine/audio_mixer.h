@@ -27,7 +27,7 @@
 
 namespace Mixer
 {
-    void SetChannels( int num );
+    void SetChannels(int num );
 
     int Play( const char *, int = -1, bool = false );
     int Play( const u8 *, u32, int = -1, bool = false );
