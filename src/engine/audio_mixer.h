@@ -35,7 +35,7 @@ namespace Mixer
     int MaxVolume();
     int Volume( int channel, int vol = -1 );
 
-    void Pause( int channel = -1 );
+    void Pause(int channel = -1 );
     void Resume( int channel = -1 );
     void Stop( int channel = -1 );
     void Reset();
