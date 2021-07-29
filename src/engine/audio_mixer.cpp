@@ -212,7 +212,7 @@ int Mixer::Volume( int channel, int vol = -1 )
     return Mix_Volume( channel, vol );
 }
 
-void Mixer::Pause( int channel /* = -1 */ )
+void Mixer::Pause( int channel = -1 )
 {
     if ( valid ) {
         Mix_Pause( channel );
