@@ -20,4 +20,8 @@ jobs:
         echo ----------------------------------
         git diff -U0 HEAD^..
         echo ----------------------------------
+        git diff -U0 267eddc..HEAD
+        echo ----------------------------------
+        git diff -U0 267eddc...HEAD
+        echo ----------------------------------
         git rev-parse --short HEAD^
