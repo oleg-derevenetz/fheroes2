@@ -18,6 +18,6 @@ jobs:
       run: |
         git diff -U0 HEAD^
         echo ----------------------------------
-        git diff -U0 HEAD^...
+        git diff -U0 HEAD^..
         echo ----------------------------------
         git rev-parse --short HEAD^
