@@ -609,7 +609,7 @@ u32 Kingdom::GetMaxHeroes( void )
     return GameStatic::GetKingdomMaxHeroes();
 }
 
-Funds Kingdom::GetIncome( int type = INCOME_ALL ) const
+Funds Kingdom::GetIncome( int type /* INCOME_ALL */ ) const
 {
     Funds totalIncome;
 
