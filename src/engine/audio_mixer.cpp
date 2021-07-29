@@ -168,7 +168,7 @@ int Mixer::MaxVolume()
     return MIX_MAX_VOLUME;
 }
 
-int Mixer::Volume( int channel, int vol /* = -1 */ )
+int Mixer::Volume( int channel, int vol = -1 )
 {
     if ( !valid ) {
         return 0;
