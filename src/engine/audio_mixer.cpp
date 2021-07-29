@@ -219,7 +219,7 @@ void Mixer::Pause( int channel = -1 )
     }
 }
 
-void Mixer::Resume( int channel /* = -1 */ )
+void Mixer::Resume( int channel = -1 )
 {
     if ( valid ) {
         Mix_Resume( channel );
