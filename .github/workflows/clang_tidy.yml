@@ -17,3 +17,4 @@ jobs:
     - name: Analyze
       run: |
         git diff -U0 HEAD^
+        git rev-parse --short HEAD^
