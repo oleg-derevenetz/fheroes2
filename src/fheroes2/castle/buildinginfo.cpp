@@ -510,10 +510,12 @@ bool BuildingInfo::DialogBuyBuilding( bool buttons ) const
     Text requires_text( _( "Requires:" ), Font::BIG );
     TextBox box2( str, Font::BIG, BOXAREA_WIDTH );
 
+    const double tempPos = 0.5;
+
     Resource::BoxSprite rbs( PaymentConditions::BuyBuilding( castle.GetRace(), building ), BOXAREA_WIDTH );
 
     const fheroes2::Sprite & window_icons = fheroes2::AGG::GetICN( ICN::BLDGXTRA, 0 );
-    const int space = 10;
+    const int space = static_cast<int>( tempPos + 0.5 );;
     Dialog::FrameBox box( space + window_icons.height() + space + box1.h() + space + ( isRequired ? requires_text.h() + box2.h() + space : 0 ) + rbs.GetArea().height,
                           buttons );
     const fheroes2::Rect & box_rt = box.GetArea();
