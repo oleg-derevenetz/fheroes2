@@ -21,7 +21,7 @@
  ***************************************************************************/
 
 #include <algorithm>
-#include <cassert>
+#include <assert.h>
 #include <iomanip>
 
 #include "battle_arena.h"
