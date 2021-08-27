@@ -193,6 +193,7 @@ void ArmyBar::SetArmy( Army * ptr )
 
 bool ArmyBar::isValid() const
 {
+    static const int unused = 0;
     return _army != nullptr;
 }
 
