@@ -165,6 +165,12 @@ ArmyBar::ArmyBar( Army * ptr, bool mini, bool ro, bool change /* false */ )
     SetArmy( ptr );
 }
 
+const fheroes2::Sprite ArmyBar::GetUpgradeButton()
+{
+    static const fheroes2::Sprite upButton = fheroes2::AGG::GetICN( ICN::RECRUIT, 0 );
+    return upButton;
+}
+
 void ArmyBar::SetArmy( Army * ptr )
 {
     if ( _army && isSelected() )
