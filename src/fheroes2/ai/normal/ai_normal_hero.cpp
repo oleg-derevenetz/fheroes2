@@ -92,6 +92,18 @@ namespace
             }
             break;
 
+        case MP2::OBJ_ABANDONEDMINE:
+            if ( !hero.isFriends( tile.QuantityColor() ) ) {
+                if ( tile.CaptureObjectIsProtection() ) {
+                    const Army enemy( tile );
+                    return army.isStrongerThan( enemy, AI::ARMY_STRENGTH_ADVANTAGE_LARGE );
+                }
+                else {
+                    return true;
+                }
+            }
+            break;
+
         case MP2::OBJ_WAGON:
         case MP2::OBJ_LEANTO:
         case MP2::OBJ_SKELETON:
@@ -607,6 +619,10 @@ namespace AI
             const MapsIndexes & list = world.GetWhirlpoolEndPoints( index );
             for ( const int whirlpoolIndex : list ) {
                 if ( world.GetTiles( whirlpoolIndex ).isFog( hero.GetColor() ) )
+                    return -3000.0;
+            }
+            for ( MapsIndexes::const_iterator it = list.begin(); it != list.end(); ++it ) {
+                if ( world.GetTiles( *it ).isFog( hero.GetColor() ) )
                     return -3000.0;
             }
             return -dangerousTaskPenalty; // no point to even loose the army for this
