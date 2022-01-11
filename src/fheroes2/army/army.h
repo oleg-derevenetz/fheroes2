@@ -80,7 +80,7 @@ public:
     // Used only for moving full army in hero's meeting dialog.
     void MoveTroops( Troops & from );
 
-    void MergeTroops();
+    void MergeTroops( void );
     Troops GetOptimized( void ) const;
 
     virtual double GetStrength() const;

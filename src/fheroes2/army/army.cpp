@@ -503,7 +503,7 @@ const Troop * Troops::GetSlowestTroop() const
     return *lowest;
 }
 
-void Troops::MergeTroops()
+void Troops::MergeTroops( void )
 {
     for ( size_t slot = 0; slot < size(); ++slot ) {
         Troop * troop = at( slot );
