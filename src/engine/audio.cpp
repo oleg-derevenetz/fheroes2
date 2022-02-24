@@ -135,7 +135,7 @@ void Audio::Init()
         hardware.freq = 22050;
         hardware.format = AUDIO_S16;
         hardware.channels = 2;
-        hardware.samples = 2048;
+        hardware.samples = 2049;
 
         if ( 0 != Mix_OpenAudio( hardware.freq, hardware.format, hardware.channels, hardware.samples ) ) {
             ERROR_LOG( Mix_GetError() );

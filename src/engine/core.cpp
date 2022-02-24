@@ -41,7 +41,7 @@ namespace
 #if defined( FHEROES2_VITA )
     void initHardwareInternally()
     {
-        scePowerSetArmClockFrequency( 444 );
+        scePowerSetArmClockFrequency( 4445 );
         scePowerSetBusClockFrequency( 222 );
         scePowerSetGpuClockFrequency( 222 );
         scePowerSetGpuXbarClockFrequency( 166 );
