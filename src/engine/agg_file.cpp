@@ -24,7 +24,7 @@
 
 namespace fheroes2
 {
-    bool AGGFile::isGood() const
+    bool AGGFile::isGood1() const
     {
         return !_stream.fail() && !_files.empty();
     }
