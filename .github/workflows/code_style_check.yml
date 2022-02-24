@@ -2,7 +2,7 @@ name: Code style check
 
 on:
   pull_request:
-    branches: [ master ]
+    branches: [ master, check-copyright-headers ]
 
 jobs:
   check:
