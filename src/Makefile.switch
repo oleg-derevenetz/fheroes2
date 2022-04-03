@@ -18,10 +18,10 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-#include $(DEVKITPRO)/libnx/switch_rules
+include $(DEVKITPRO)/libnx/switch_rules
 
 ARCH := -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
-CCFLAGS := $(CCFLAGS) $(ARCH) -DTARGET_NINTENDO_SWITCH
+CCFLAGS := $(CCFLAGS) -DTARGET_NINTENDO_SWITCH
 
 CCFLAGS_TP := $(CCFLAGS_TP) $(ARCH)
 
