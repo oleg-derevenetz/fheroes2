@@ -142,7 +142,6 @@ jobs:
         FHEROES2_STRICT_COMPILATION: ON
         FHEROES2_WITH_SDL1: ON
         FHEROES2_WITH_DEBUG: ON
-        FHEROES2_WITH_IMAGE: ON
         FHEROES2_MACOS_APP_BUNDLE: ON
         FHEROES2_DATA: "/XXX /YYY/ZZZ"
         VITASDK: /usr/local/vitasdk
@@ -188,7 +187,6 @@ jobs:
       env:
         FHEROES2_STRICT_COMPILATION: ON
         FHEROES2_WITH_DEBUG: ON
-        FHEROES2_WITH_IMAGE: ON
         FHEROES2_MACOS_APP_BUNDLE: ON
         FHEROES2_DATA: "/XXX /YYY/ZZZ"
         DEVKITPRO: /opt/devkitpro
