@@ -134,6 +134,20 @@ jobs:
             sudo rm -rf /usr/local/vitasdk
             sudo mv ~/.vitasdk-cache /usr/local/vitasdk
         fi
+    - name: Build jemalloc
+      run: |
+        export PATH="$VITASDK/bin:$PATH"
+        wget https://github.com/jemalloc/jemalloc/releases/download/5.2.1/jemalloc-5.2.1.tar.bz2
+        tar -xzf jemalloc-5.2.1.tar.bz2
+        cd jemalloc-5.2.1
+        ./configure
+        make
+        ls -la
+      env:
+        VITASDK: /usr/local/vitasdk
+        AR: arm-vita-eabi-gcc-ar
+        CC: arm-vita-eabi-gcc
+        CXX: arm-vita-eabi-g++
     - name: Build
       run: |
         export PATH="$VITASDK/bin:$PATH"
