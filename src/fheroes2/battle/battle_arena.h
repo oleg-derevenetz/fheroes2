@@ -62,7 +62,7 @@ namespace Battle
 
         TroopsUidGenerator & operator=( const TroopsUidGenerator & ) = delete;
 
-        uint32_t GetUnique()
+        uint32_t GetUnique( void )
         {
             return _id++;
         }
