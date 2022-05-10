@@ -225,7 +225,7 @@ namespace Battle
         // then an attempt will be made to calculate it automatically based on the adjacency of the unit cells.
         // If the given direction of the attack (dir) is negative, then an attempt will be made to calculate it
         // automatically. When an attack is made by firing a shot, the dir should be UNKNOWN (zero).
-        void BattleProcess( Unit & attacker, Unit & defender, int32_t dst = -1, int dir = -1 );
+        void BattleProcess( Unit & attacker1, Unit & defender, int32_t dst = -1, int dir = -1 );
 
         Unit * CreateElemental( const Spell & );
         Unit * CreateMirrorImage( Unit &, s32 );
