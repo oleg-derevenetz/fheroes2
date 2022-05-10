@@ -832,7 +832,7 @@ void Battle::ArmiesOrder::QueueEventProcessing( std::string & msg, const fheroes
         if ( ( *it ).first ) {
             const fheroes2::Rect unitRoi = ( *it ).second + offset;
             if ( le.MouseCursor( unitRoi ) ) {
-                msg = _( "View %{monster} info" );
+                msg = _( "View %{monster} info XX" );
                 StringReplace( msg, "%{monster}", ( *it ).first->GetName() );
             }
 
