@@ -64,7 +64,7 @@ namespace Battle
         void ResetQuality( void );
         void resetReachability();
 
-        void SetObject( int );
+        void SetObject( const int o );
         void SetQuality( u32 );
 
         void setReachableForHead();

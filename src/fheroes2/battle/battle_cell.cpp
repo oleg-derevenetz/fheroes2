@@ -274,7 +274,7 @@ s32 Battle::Cell::GetQuality( void ) const
     return quality;
 }
 
-void Battle::Cell::SetObject( int val )
+void Battle::Cell::SetObject( const int val )
 {
     object = val;
 }
