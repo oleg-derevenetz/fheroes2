@@ -60,4 +60,8 @@ jobs:
               issue_number: pr.data.number,
               labels: ["improvement", "translation"],
           });
-          await Promise.all([assigneesPromise, labelsPromise]);
+          let checksPromise = github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+          });
+          await Promise.all([assigneesPromise, labelsPromise, checksPromise]);
