@@ -62,5 +62,7 @@ jobs:
           let checksPromise = github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
+              name: "Pull Request",
+              head_sha: pr.data.merge_commit_sha,
           });
           await Promise.all([assigneesPromise, labelsPromise, checksPromise]);
