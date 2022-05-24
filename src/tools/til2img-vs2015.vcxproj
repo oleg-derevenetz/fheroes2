@@ -37,6 +37,8 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{93C65864-B300-4957-855C-3316FD9C4000}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <RootNamespace>til2img</RootNamespace>
+    <TargetName>til2img</TargetName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug-SDL1|Win32'" Label="Configuration">
