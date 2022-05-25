@@ -34,42 +34,45 @@ def main():
     generic_hdr_re = re.compile("^/\\*.*?\\*/", re.DOTALL)
 
     for file_name in sys.argv[3:]:
-        with open(file_name, "r", encoding="latin_1") as src_file:
-            src = src_file.read()
+        try:
+            with open(file_name, "r", encoding="latin_1") as src_file:
+                src = src_file.read()
 
-            year_re_match = copyright_hdr_year_re.match(src)
-            yrng_re_match = copyright_hdr_yrng_re.match(src)
+                year_re_match = copyright_hdr_year_re.match(src)
+                yrng_re_match = copyright_hdr_yrng_re.match(src)
 
-            src_is_ok = False
+                src_is_ok = False
 
-            if year_re_match:
-                if year_re_match.group(1) == f"{CURRENT_YEAR}":
-                    src_is_ok = True
-            elif yrng_re_match:
-                if yrng_re_match.group(2) == f"{CURRENT_YEAR}":
-                    src_is_ok = True
-
-            if not src_is_ok:
                 if year_re_match:
-                    hdr = copyright_hdr_tmpl.replace("{Y1}", f"{year_re_match.group(1)}") \
-                                            .replace("{Y2}", f"{CURRENT_YEAR}")
-                    src = copyright_hdr_year_re.sub(hdr, src)
+                    if year_re_match.group(1) == f"{CURRENT_YEAR}":
+                        src_is_ok = True
                 elif yrng_re_match:
-                    hdr = copyright_hdr_tmpl.replace("{Y1}", f"{yrng_re_match.group(1)}") \
-                                            .replace("{Y2}", f"{CURRENT_YEAR}")
-                    src = copyright_hdr_yrng_re.sub(hdr, src)
-                elif generic_hdr_re.match(src):
-                    src = generic_hdr_re.sub(copyright_hdr_full, src)
-                else:
-                    src = copyright_hdr_full + "\n\n" + src.lstrip()
+                    if yrng_re_match.group(2) == f"{CURRENT_YEAR}":
+                        src_is_ok = True
 
-                with open(file_name + ".tmp", "w", encoding="latin_1") as tmp_file:
-                    tmp_file.write(src)
+                if not src_is_ok:
+                    if year_re_match:
+                        hdr = copyright_hdr_tmpl.replace("{Y1}", f"{year_re_match.group(1)}") \
+                                                .replace("{Y2}", f"{CURRENT_YEAR}")
+                        src = copyright_hdr_year_re.sub(hdr, src)
+                    elif yrng_re_match:
+                        hdr = copyright_hdr_tmpl.replace("{Y1}", f"{yrng_re_match.group(1)}") \
+                                                .replace("{Y2}", f"{CURRENT_YEAR}")
+                        src = copyright_hdr_yrng_re.sub(hdr, src)
+                    elif generic_hdr_re.match(src):
+                        src = generic_hdr_re.sub(copyright_hdr_full, src)
+                    else:
+                        src = copyright_hdr_full + "\n\n" + src.lstrip()
 
-                with subprocess.Popen(["diff", "-u", file_name, file_name + ".tmp"]) as diff_proc:
-                    diff_proc.wait()
+                    with open(file_name + ".tmp", "w", encoding="latin_1") as tmp_file:
+                        tmp_file.write(src)
 
-                os.remove(file_name + ".tmp")
+                    with subprocess.Popen(["diff", "-u", file_name, file_name + ".tmp"]) as diff_proc:
+                        diff_proc.wait()
+
+                    os.remove(file_name + ".tmp")
+        except FileNotFoundError:
+            pass
 
     return 0
 
