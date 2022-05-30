@@ -32,6 +32,8 @@ CFLAGS := $(CFLAGS)
 CXXFLAGS := $(CXXFLAGS)
 # Flags for the linker
 LDFLAGS := $(LDFLAGS) -pthread
+# Flags for the preprocessor
+CPPFLAGS := $(CPPFLAGS)
 
 ifdef FHEROES2_WITH_DEBUG
 CCFLAGS := $(CCFLAGS) -O0 -g
