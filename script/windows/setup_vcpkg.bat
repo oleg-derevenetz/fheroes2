@@ -4,7 +4,7 @@ set VCPKG_ROOT=%~1
 set PLATFORM=%~2
 set PACKAGES=%~3
 
-"%VCPKG_ROOT%\vcpkg.exe" --triplet "%PLATFORM%-windows" install sdl2 sdl2-mixer[fluidsynth,libflac,libvorbis,mpg123] sdl2-image zlib
+"%VCPKG_ROOT%\vcpkg.exe" --triplet "%PLATFORM%-windows" install sdl2 sdl2-mixer sdl2-image zlib
 
 if not exist "%PACKAGES%\zlib\include"          mkdir "%PACKAGES%\zlib\include"
 if not exist "%PACKAGES%\zlib\lib\%PLATFORM%"   mkdir "%PACKAGES%\zlib\lib\%PLATFORM%"
