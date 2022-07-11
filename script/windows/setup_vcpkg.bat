@@ -4,7 +4,7 @@ set VCPKG_ROOT=%~1
 set PLATFORM=%~2
 set PACKAGES=%~3
 
-"%VCPKG_ROOT%\vcpkg.exe" --triplet "%PLATFORM%-windows" install sdl2 sdl2-mixer[libflac,libvorbis,mpg123,nativemidi] sdl2-image zlib
+"%VCPKG_ROOT%\vcpkg.exe" --triplet "%PLATFORM%-windows" install sdl2 sdl2-mixer[fluidsynth,libflac,libvorbis,mpg123] sdl2-image zlib
 
 if not exist "%PACKAGES%\zlib\include"          mkdir "%PACKAGES%\zlib\include"
 if not exist "%PACKAGES%\zlib\lib\%PLATFORM%"   mkdir "%PACKAGES%\zlib\lib\%PLATFORM%"
@@ -28,7 +28,6 @@ xcopy /Y /Q    "%VCPKG_ROOT%\packages\zlib_%PLATFORM%-windows\bin\zlib1.dll"    
 xcopy /Y /Q /S "%VCPKG_ROOT%\packages\zlib_%PLATFORM%-windows\include"                  "%PACKAGES%\zlib\include"
 xcopy /Y /Q    "%VCPKG_ROOT%\packages\zlib_%PLATFORM%-windows\lib\zlib.lib"             "%PACKAGES%\zlib\lib\%PLATFORM%"
 
-xcopy /Y /Q    "%VCPKG_ROOT%\packages\libpng_%PLATFORM%-windows\bin\libpng16.dll"       "%PACKAGES%\extras\lib\%PLATFORM%"
 xcopy /Y /Q    "%VCPKG_ROOT%\packages\libflac_%PLATFORM%-windows\bin\FLAC.dll"          "%PACKAGES%\extras\lib\%PLATFORM%"
 xcopy /Y /Q    "%VCPKG_ROOT%\packages\libogg_%PLATFORM%-windows\bin\ogg.dll"            "%PACKAGES%\extras\lib\%PLATFORM%"
 xcopy /Y /Q    "%VCPKG_ROOT%\packages\libvorbis_%PLATFORM%-windows\bin\vorbis.dll"      "%PACKAGES%\extras\lib\%PLATFORM%"
