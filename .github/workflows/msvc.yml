@@ -26,7 +26,7 @@ jobs:
     - name: Prepare VCPKG cache
       uses: actions/cache@v3
       with:
-        path: ~/.cache/vcpkg/archives
+        path: ~/AppData/Local/vcpkg/archives
         key: msvc-vcpkg-cache-${{ github.sha }}
         restore-keys: |
           msvc-vcpkg-cache-
