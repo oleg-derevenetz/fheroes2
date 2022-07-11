@@ -30,6 +30,13 @@ jobs:
         shell: bash
     steps:
     - uses: actions/checkout@v2
+    - name: Prepare VCPKG cache
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/vcpkg/archives
+        key: msvc-vcpkg-cache-${{ github.sha }}
+        restore-keys: |
+          msvc-vcpkg-cache-
     - name: Install dependencies, cygwin and zip
       run: |
         script/windows/setup_vcpkg.bat C:/vcpkg ${{ matrix.config.platform }} VisualStudio/packages/installed
