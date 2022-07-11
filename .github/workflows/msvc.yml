@@ -33,6 +33,7 @@ jobs:
     - name: Install dependencies, cygwin and zip
       run: |
         script/windows/setup_vcpkg.bat C:/vcpkg ${{ matrix.config.platform }} VisualStudio/packages/installed
+        ls -lR C:/vcpkg/packages
         choco.exe install make gettext-devel -y --source cygwin
         choco.exe install zip -y
     - uses: microsoft/setup-msbuild@v1
