@@ -17,7 +17,12 @@ exit /B 1
 if not exist "%PACKAGES_DIR%\include"        ( mkdir "%PACKAGES_DIR%\include"        || exit /B 1 )
 if not exist "%PACKAGES_DIR%\lib\%PLATFORM%" ( mkdir "%PACKAGES_DIR%\lib\%PLATFORM%" || exit /B 1 )
 
-xcopy /Y /Q    "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\bin\*.dll" "%PACKAGES_DIR%\lib\%PLATFORM%" && ^
+xcopy /Y /Q "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\bin\libfluidsynth*.dll" "%PACKAGES_DIR%\lib\%PLATFORM%" && ^
+xcopy /Y /Q "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\bin\libpng*.dll"        "%PACKAGES_DIR%\lib\%PLATFORM%" && ^
+xcopy /Y /Q "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\bin\SDL2*.dll"          "%PACKAGES_DIR%\lib\%PLATFORM%" && ^
+xcopy /Y /Q "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\bin\zlib*.dll"          "%PACKAGES_DIR%\lib\%PLATFORM%" || ^
+exit /B 1
+
 xcopy /Y /Q /S "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\include"   "%PACKAGES_DIR%\include"        && ^
 xcopy /Y /Q /S "%VCPKG_ROOT_DIR%\installed\%TRIPLET%\lib"       "%PACKAGES_DIR%\lib\%PLATFORM%" || ^
 exit /B 1
