@@ -11,7 +11,7 @@ set PACKAGES_DIR=%~3
 
 set TRIPLET=%PLATFORM%-windows
 
-"%VCPKG_DIR%\vcpkg" --triplet "%TRIPLET%" install fluidsynth[buildtools,sndfile] sdl2 sdl2-mixer[fluidsynth,nativemidi] sdl2-image zlib || ^
+"%VCPKG_DIR%\vcpkg" --triplet "%TRIPLET%" install fluidsynth[buildtools,sndfile] sdl2 sdl2-mixer[fluidsynth,nativemidi,mpg123,libvorbis] sdl2-image zlib || ^
 exit /B 1
 
 if not exist "%PACKAGES_DIR%\include"        ( mkdir "%PACKAGES_DIR%\include"        || exit /B 1 )
