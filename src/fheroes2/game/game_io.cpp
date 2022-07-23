@@ -36,9 +36,10 @@
 #include "save_format_version.h"
 #include "settings.h"
 #include "system.h"
-#include "text.h"
 #include "translations.h"
+#include "ui_dialog.h"
 #include "ui_language.h"
+#include "ui_text.h"
 #include "world.h"
 #include "zzlib.h"
 
@@ -107,7 +108,7 @@ bool Game::Save( const std::string & fn )
         return false;
     }
 
-    u16 loadver = GetLoadVersion();
+    uint16_t loadver = GetLoadVersion();
     if ( !autosave )
         Game::SetLastSavename( fn );
 
@@ -145,7 +146,7 @@ fheroes2::GameMode Game::Load( const std::string & fn )
     char major;
     char minor;
     fs >> major >> minor;
-    const u16 savid = ( static_cast<u16>( major ) << 8 ) | static_cast<u16>( minor );
+    const uint16_t savid = ( static_cast<uint16_t>( major ) << 8 ) | static_cast<uint16_t>( minor );
 
     // check version sav file
     if ( savid != SAV2ID2 && savid != SAV2ID3 ) {
@@ -154,7 +155,7 @@ fheroes2::GameMode Game::Load( const std::string & fn )
     }
 
     std::string strver;
-    u16 binver = 0;
+    uint16_t binver = 0;
 
     // read raw info
     fs >> strver >> binver;
@@ -173,7 +174,8 @@ fheroes2::GameMode Game::Load( const std::string & fn )
 
     Settings & conf = Settings::Get();
     if ( ( conf.GameType() & fileGameType ) == 0 ) {
-        Dialog::Message( _( "Warning" ), _( "Invalid file game type. Please ensure that you are running the latest type of save files." ), Font::BIG, Dialog::OK );
+        fheroes2::showMessage( fheroes2::Text( _( "Warning" ), fheroes2::FontType::normalYellow() ),
+                               fheroes2::Text( _( "This file contains a save with an invalid game type." ), fheroes2::FontType::normalWhite() ), Dialog::OK );
         return fheroes2::GameMode::CANCEL;
     }
 
@@ -186,7 +188,10 @@ fheroes2::GameMode Game::Load( const std::string & fn )
     }
 
     if ( ( header.status & HeaderSAV::IS_LOYALTY ) && !conf.isPriceOfLoyaltySupported() ) {
-        Dialog::Message( _( "Warning" ), _( "This file is saved in the \"The Price of Loyalty\" version.\nSome items may be unavailable." ), Font::BIG, Dialog::OK );
+        fheroes2::showMessage( fheroes2::Text( _( "Warning" ), fheroes2::FontType::normalYellow() ),
+                               fheroes2::Text( _( "This file was saved by the \"The Price of Loyalty\" version of the game.\nSome items may not be available." ),
+                                               fheroes2::FontType::normalWhite() ),
+                               Dialog::OK );
     }
 
     fz >> binver;
@@ -203,7 +208,9 @@ fheroes2::GameMode Game::Load( const std::string & fn )
         errorMessage += std::to_string( LAST_SUPPORTED_FORMAT_VERSION );
         errorMessage += ".\n";
 
-        Dialog::Message( _( "Error" ), errorMessage, Font::BIG, Dialog::OK );
+        fheroes2::showMessage( fheroes2::Text( _( "Error" ), fheroes2::FontType::normalYellow() ), fheroes2::Text( errorMessage, fheroes2::FontType::normalWhite() ),
+                               Dialog::OK );
+
         return fheroes2::GameMode::CANCEL;
     }
 
@@ -221,7 +228,9 @@ fheroes2::GameMode Game::Load( const std::string & fn )
         warningMessage.append( _( "' language, but the current language of the game is '" ) );
         warningMessage.append( fheroes2::getLanguageName( fheroes2::getLanguageFromAbbreviation( conf.getGameLanguage() ) ) );
         warningMessage += "'.";
-        Dialog::Message( _( "Warning" ), warningMessage, Font::BIG, Dialog::OK );
+
+        fheroes2::showMessage( fheroes2::Text( _( "Warning" ), fheroes2::FontType::normalYellow() ), fheroes2::Text( warningMessage, fheroes2::FontType::normalWhite() ),
+                               Dialog::OK );
     }
 
     fheroes2::GameMode returnValue = fheroes2::GameMode::START_GAME;
@@ -277,7 +286,7 @@ bool Game::LoadSAV2FileInfo( const std::string & fn, Maps::FileInfo & finfo )
     char major;
     char minor;
     fs >> major >> minor;
-    const u16 savid = ( static_cast<u16>( major ) << 8 ) | static_cast<u16>( minor );
+    const uint16_t savid = ( static_cast<uint16_t>( major ) << 8 ) | static_cast<uint16_t>( minor );
 
     // check version sav file
     if ( savid != SAV2ID2 && savid != SAV2ID3 ) {
@@ -286,7 +295,7 @@ bool Game::LoadSAV2FileInfo( const std::string & fn, Maps::FileInfo & finfo )
     }
 
     std::string strver;
-    u16 binver = 0;
+    uint16_t binver = 0;
 
     // read raw info
     fs >> strver >> binver;

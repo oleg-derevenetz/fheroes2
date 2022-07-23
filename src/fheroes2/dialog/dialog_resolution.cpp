@@ -56,7 +56,7 @@ namespace
             , _isDoubleClicked( false )
         {}
 
-        void RedrawItem( const fheroes2::Size & resolution, s32 offsetX, s32 offsetY, bool current ) override
+        void RedrawItem( const fheroes2::Size & resolution, int32_t offsetX, int32_t offsetY, bool current ) override
         {
             const Text text( GetResolutionString( resolution ), ( current ? Font::YELLOW_BIG : Font::BIG ) );
             text.Blit( ( editBoxLength - text.w() ) / 2 + offsetX, offsetY, editBoxLength );
@@ -147,10 +147,9 @@ namespace Dialog
         resList.SetScrollButtonUp( ICN::REQUESTS, 5, 6, { roi.x + 327, roi.y + 55 } );
         resList.SetScrollButtonDn( ICN::REQUESTS, 7, 8, { roi.x + 327, roi.y + 257 } );
 
-        const fheroes2::Sprite & originalSilder = fheroes2::AGG::GetICN( ICN::ESCROLL, 3 );
-        const fheroes2::Image scrollbarSlider
-            = fheroes2::generateScrollbarSlider( originalSilder, false, 180, 11, static_cast<int32_t>( resolutions.size() ), { 0, 0, originalSilder.width(), 8 },
-                                                 { 0, 7, originalSilder.width(), 8 } );
+        const fheroes2::Sprite & originalSlider = fheroes2::AGG::GetICN( ICN::ESCROLL, 3 );
+        const fheroes2::Image scrollbarSlider = fheroes2::generateScrollbarSlider( originalSlider, false, 180, 11, static_cast<int32_t>( resolutions.size() ),
+                                                                                   { 0, 0, originalSlider.width(), 8 }, { 0, 7, originalSlider.width(), 8 } );
         resList.setScrollBarArea( { roi.x + 328, roi.y + 73, 12, 180 } );
         resList.setScrollBarImage( scrollbarSlider );
         resList.SetAreaMaxItems( 11 );

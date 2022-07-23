@@ -66,7 +66,7 @@ enum armysize_t
     ARMY_LEGION = 1000
 };
 
-armysize_t ArmyGetSize( u32 count )
+armysize_t ArmyGetSize( uint32_t count )
 {
     if ( ARMY_LEGION <= count )
         return ARMY_LEGION;
@@ -130,7 +130,7 @@ std::string Army::TroopSizeString( const Troop & troop )
     return str;
 }
 
-std::string Army::SizeString( u32 size )
+std::string Army::SizeString( uint32_t size )
 {
     switch ( ArmyGetSize( size ) ) {
     case ARMY_FEW:
@@ -158,6 +158,39 @@ std::string Army::SizeString( u32 size )
     }
 
     return {};
+}
+
+std::pair<uint32_t, uint32_t> Army::SizeRange( const uint32_t count )
+{
+    if ( count < ARMY_SEVERAL ) {
+        return { ARMY_FEW, ARMY_SEVERAL };
+    }
+    if ( count < ARMY_PACK ) {
+        return { ARMY_SEVERAL, ARMY_PACK };
+    }
+    if ( count < ARMY_LOTS ) {
+        return { ARMY_PACK, ARMY_LOTS };
+    }
+    if ( count < ARMY_HORDE ) {
+        return { ARMY_LOTS, ARMY_HORDE };
+    }
+    if ( count < ARMY_THRONG ) {
+        return { ARMY_HORDE, ARMY_THRONG };
+    }
+    if ( count < ARMY_SWARM ) {
+        return { ARMY_THRONG, ARMY_SWARM };
+    }
+    if ( count < ARMY_ZOUNDS ) {
+        return { ARMY_SWARM, ARMY_ZOUNDS };
+    }
+    if ( count < ARMY_LEGION ) {
+        return { ARMY_ZOUNDS, ARMY_LEGION };
+    }
+    if ( count < 5000 ) {
+        return { ARMY_LEGION, 5000 };
+    }
+
+    return { 5000, UINT32_MAX };
 }
 
 Troops::Troops( const Troops & troops )
@@ -215,12 +248,12 @@ void Troops::Insert( const Troops & troops )
         push_back( new Troop( **it ) );
 }
 
-void Troops::PushBack( const Monster & mons, u32 count )
+void Troops::PushBack( const Monster & mons, uint32_t count )
 {
     push_back( new Troop( mons, count ) );
 }
 
-void Troops::PopBack( void )
+void Troops::PopBack()
 {
     if ( !empty() ) {
         delete back();
@@ -247,9 +280,9 @@ void Troops::UpgradeMonsters( const Monster & m )
     }
 }
 
-u32 Troops::GetCountMonsters( const Monster & m ) const
+uint32_t Troops::GetCountMonsters( const Monster & m ) const
 {
-    u32 c = 0;
+    uint32_t c = 0;
 
     for ( const_iterator it = begin(); it != end(); ++it )
         if ( ( *it )->isValid() && **it == m )
@@ -276,7 +309,7 @@ double Troops::getReinforcementValue( const Troops & reinforcement ) const
     return combined.GetStrength() - initialValue;
 }
 
-bool Troops::isValid( void ) const
+bool Troops::isValid() const
 {
     for ( const_iterator it = begin(); it != end(); ++it ) {
         if ( ( *it )->isValid() )
@@ -285,7 +318,7 @@ bool Troops::isValid( void ) const
     return false;
 }
 
-u32 Troops::GetCount( void ) const
+uint32_t Troops::GetCount() const
 {
     uint32_t total = 0;
     for ( const_iterator it = begin(); it != end(); ++it ) {
@@ -411,7 +444,7 @@ void Troops::MoveTroops( const Troops & from )
 }
 
 // Return true when all valid troops have the same ID, or when there are no troops
-bool Troops::AllTroopsAreTheSame( void ) const
+bool Troops::AllTroopsAreTheSame() const
 {
     int firstMonsterId = Monster::UNKNOWN;
     for ( const Troop * troop : *this ) {
@@ -437,7 +470,7 @@ double Troops::GetStrength() const
     return strength;
 }
 
-void Troops::Clean( void )
+void Troops::Clean()
 {
     std::for_each( begin(), end(), []( Troop * troop ) { troop->Reset(); } );
 }
@@ -456,7 +489,7 @@ void Troops::UpgradeTroops( const Castle & castle )
         }
 }
 
-Troop * Troops::GetFirstValid( void )
+Troop * Troops::GetFirstValid()
 {
     iterator it = std::find_if( begin(), end(), []( const Troop * troop ) { return troop->isValid(); } );
     return it == end() ? nullptr : *it;
@@ -486,7 +519,7 @@ Troop * Troops::GetWeakestTroop() const
     return *lowest;
 }
 
-const Troop * Troops::GetSlowestTroop() const
+Troop * Troops::GetSlowestTroop() const
 {
     const_iterator first = begin();
     const_iterator last = end();
@@ -527,7 +560,7 @@ void Troops::MergeTroops()
     }
 }
 
-Troops Troops::GetOptimized( void ) const
+Troops Troops::GetOptimized() const
 {
     Troops result;
     result.reserve( size() );
@@ -551,19 +584,18 @@ void Troops::SortStrongest()
     std::sort( begin(), end(), Army::StrongestTroop );
 }
 
-// Pre-battle arrangement for Monster or Neutral troops
-void Troops::ArrangeForBattle( bool upgrade )
+void Troops::ArrangeForBattle( bool upgrade /* = false */ )
 {
     const Troops & priority = GetOptimized();
 
     if ( priority.size() == 1 ) {
         const Monster & m = *priority.back();
-        const u32 count = priority.back()->GetCount();
+        const uint32_t count = priority.back()->GetCount();
 
         Clean();
 
         if ( 49 < count ) {
-            const u32 c = count / 5;
+            const uint32_t c = count / 5;
             at( 0 )->Set( m, c );
             at( 1 )->Set( m, c );
             at( 2 )->Set( m, c + count - ( c * 5 ) );
@@ -574,7 +606,7 @@ void Troops::ArrangeForBattle( bool upgrade )
                 at( 2 )->Upgrade();
         }
         else if ( 20 < count ) {
-            const u32 c = count / 3;
+            const uint32_t c = count / 3;
             at( 1 )->Set( m, c );
             at( 2 )->Set( m, c + count - ( c * 3 ) );
             at( 3 )->Set( m, c );
@@ -588,6 +620,36 @@ void Troops::ArrangeForBattle( bool upgrade )
     else {
         Assign( priority );
     }
+}
+
+void Troops::ArrangeForBattle( const Monster & monster, const uint32_t monstersCount, const uint32_t stacksCount )
+{
+    assert( stacksCount > 0 && stacksCount <= size() && size() == ARMYMAXTROOPS );
+    assert( std::all_of( begin(), end(), []( const Troop * troop ) { return troop->isEmpty(); } ) );
+
+    size_t stacks;
+
+    for ( stacks = stacksCount; stacks > 0; --stacks ) {
+        if ( monstersCount / stacks > 0 ) {
+            break;
+        }
+    }
+
+    assert( stacks > 0 );
+
+    const uint32_t quotient = monstersCount / static_cast<uint32_t>( stacks );
+    const uint32_t remainder = monstersCount % static_cast<uint32_t>( stacks );
+
+    assert( quotient > 0 );
+
+    const size_t shift = ( size() - stacks ) / 2;
+
+    for ( size_t i = 0; i < stacks; ++i ) {
+        at( i + shift )->Set( monster, i < remainder ? quotient + 1 : quotient );
+    }
+
+    assert( std::accumulate( begin(), end(), 0U, []( const uint32_t count, const Troop * troop ) { return troop->isValid() ? count + troop->GetCount() : count; } )
+            == monstersCount );
 }
 
 void Troops::ArrangeForWhirlpool()
@@ -797,7 +859,7 @@ Army::Army( HeroBase * s )
     , color( Color::NONE )
 {
     reserve( ARMYMAXTROOPS );
-    for ( u32 ii = 0; ii < ARMYMAXTROOPS; ++ii )
+    for ( uint32_t ii = 0; ii < ARMYMAXTROOPS; ++ii )
         push_back( new ArmyTroop( this ) );
 }
 
@@ -807,7 +869,7 @@ Army::Army( const Maps::Tiles & t )
     , color( Color::NONE )
 {
     reserve( ARMYMAXTROOPS );
-    for ( u32 ii = 0; ii < ARMYMAXTROOPS; ++ii )
+    for ( uint32_t ii = 0; ii < ARMYMAXTROOPS; ++ii )
         push_back( new ArmyTroop( this ) );
 
     setFromTile( t );
@@ -847,10 +909,37 @@ void Army::setFromTile( const Maps::Tiles & tile )
         ArrangeForBattle( false );
         break;
 
-    case MP2::OBJ_SHIPWRECK:
-        at( 0 )->Set( Monster::GHOST, tile.GetQuantity2() );
-        ArrangeForBattle( false );
+    case MP2::OBJ_SHIPWRECK: {
+        uint32_t count = 0;
+
+        switch ( tile.QuantityVariant() ) {
+        case 0:
+            // Shipwreck guardians were defeated.
+            return;
+        case 1:
+            count = 10;
+            break;
+        case 2:
+            count = 15;
+            break;
+        case 3:
+            count = 25;
+            break;
+        case 4:
+            count = 50;
+            break;
+        default:
+            assert( 0 );
+            break;
+        }
+
+        // The number of stacks is deterministically random and is always the same for a particular tile
+        std::mt19937 seededGen( world.GetMapSeed() + static_cast<uint32_t>( tile.GetIndex() ) );
+
+        ArrangeForBattle( Monster::GHOST, count, Rand::GetWithGen( 3, 5, seededGen ) );
+
         break;
+    }
 
     case MP2::OBJ_DERELICTSHIP:
         at( 0 )->Set( Monster::SKELETON, 200 );
@@ -929,6 +1018,17 @@ void Army::setFromTile( const Maps::Tiles & tile )
         at( 3 )->Set( Monster::EARTH_ELEMENT, 2 );
         break;
 
+    case MP2::OBJ_ABANDONEDMINE: {
+        const Troop & troop = world.GetCapturedObject( tile.GetIndex() ).GetTroop();
+
+        // The number of stacks is deterministically random and is always the same for a particular tile
+        std::mt19937 seededGen( world.GetMapSeed() + static_cast<uint32_t>( tile.GetIndex() ) );
+
+        ArrangeForBattle( troop.GetMonster(), troop.GetCount(), Rand::GetWithGen( 3, 5, seededGen ) );
+
+        break;
+    }
+
     default:
         if ( isCaptureObject ) {
             CapturedObject & co = world.GetCapturedObject( tile.GetIndex() );
@@ -973,13 +1073,13 @@ void Army::setFromTile( const Maps::Tiles & tile )
     }
 }
 
-int Army::GetColor( void ) const
+int Army::GetColor() const
 {
     const HeroBase * currentCommander = GetCommander();
     return currentCommander != nullptr ? currentCommander->GetColor() : color;
 }
 
-int Army::GetLuck( void ) const
+int Army::GetLuck() const
 {
     const HeroBase * currentCommander = GetCommander();
     return currentCommander != nullptr ? currentCommander->GetLuck() : GetLuckModificator( nullptr );
@@ -999,7 +1099,7 @@ int Army::GetLuckModificator( std::string * strs ) const
     return result;
 }
 
-int Army::GetMorale( void ) const
+int Army::GetMorale() const
 {
     const HeroBase * currentCommander = GetCommander();
     return currentCommander != nullptr ? currentCommander->GetMorale() : GetMoraleModificator( nullptr );
@@ -1154,22 +1254,22 @@ void Army::Reset( const bool soft /* = false */ )
     }
 }
 
-HeroBase * Army::GetCommander( void )
+HeroBase * Army::GetCommander()
 {
     return ( !commander || ( commander->isCaptain() && !commander->isValid() ) ) ? nullptr : commander;
 }
 
-const Castle * Army::inCastle( void ) const
+const Castle * Army::inCastle() const
 {
     return commander ? commander->inCastle() : nullptr;
 }
 
-const HeroBase * Army::GetCommander( void ) const
+const HeroBase * Army::GetCommander() const
 {
     return ( !commander || ( commander->isCaptain() && !commander->isValid() ) ) ? nullptr : commander;
 }
 
-int Army::GetControl( void ) const
+int Army::GetControl() const
 {
     return commander ? commander->GetControl() : ( color == Color::NONE ? CONTROL_AI : Players::GetPlayerControl( color ) );
 }
@@ -1179,14 +1279,14 @@ uint32_t Army::getTotalCount() const
     return std::accumulate( begin(), end(), 0u, []( const uint32_t count, const Troop * troop ) { return troop->isValid() ? count + troop->GetCount() : count; } );
 }
 
-std::string Army::String( void ) const
+std::string Army::String() const
 {
     std::ostringstream os;
 
     os << "color(" << Color::String( commander ? commander->GetColor() : color ) << "), ";
 
     if ( GetCommander() )
-        os << "commander(" << GetCommander()->GetName() << "), ";
+        os << "commander(" << GetCommander()->GetName() << ")";
 
     os << ": ";
 
@@ -1266,7 +1366,7 @@ bool Army::isMeleeDominantArmy() const
 }
 
 // draw MONS32 sprite in line, first valid = 0, count = 0
-void Army::drawMiniMonsLine( const Troops & troops, s32 cx, s32 cy, u32 width, u32 first, u32 count )
+void Army::drawMiniMonsLine( const Troops & troops, int32_t cx, int32_t cy, uint32_t width, uint32_t first, uint32_t count )
 {
     fheroes2::drawMiniMonsters( troops, cx, cy, width, first, count, Skill::Level::EXPERT, false, true, fheroes2::Display::instance() );
 }
@@ -1334,7 +1434,7 @@ NeutralMonsterJoiningCondition Army::GetJoinSolution( const Heroes & hero, const
         return { NeutralMonsterJoiningCondition::Reason::None, 0, nullptr, nullptr };
     }
 
-    if ( tile.MonsterJoinConditionSkip() || !troop.isValid() ) {
+    if ( Maps::isMonsterOnTileJoinConditionSkip( tile ) || !troop.isValid() ) {
         return { NeutralMonsterJoiningCondition::Reason::None, 0, nullptr, nullptr };
     }
 
@@ -1342,7 +1442,7 @@ NeutralMonsterJoiningCondition Army::GetJoinSolution( const Heroes & hero, const
     const double armyStrengthRatio = static_cast<const Troops &>( hero.GetArmy() ).GetStrength() / troop.GetStrength();
 
     if ( armyStrengthRatio > 2 ) {
-        if ( tile.MonsterJoinConditionFree() ) {
+        if ( Maps::isMonsterOnTileJoinConditionFree( tile ) ) {
             return { NeutralMonsterJoiningCondition::Reason::Free, troop.GetCount(), nullptr, nullptr };
         }
 
@@ -1387,7 +1487,7 @@ void Army::SwapTroops( Troop & t1, Troop & t2 )
     std::swap( t1, t2 );
 }
 
-bool Army::SaveLastTroop( void ) const
+bool Army::SaveLastTroop() const
 {
     return commander && commander->isHeroes() && 1 == GetCount();
 }
@@ -1414,7 +1514,7 @@ void Army::resetInvalidMonsters() const
 
 StreamBase & operator<<( StreamBase & msg, const Army & army )
 {
-    msg << static_cast<u32>( army.size() );
+    msg << static_cast<uint32_t>( army.size() );
 
     // Army: fixed size
     for ( Army::const_iterator it = army.begin(); it != army.end(); ++it )
@@ -1425,7 +1525,7 @@ StreamBase & operator<<( StreamBase & msg, const Army & army )
 
 StreamBase & operator>>( StreamBase & msg, Army & army )
 {
-    u32 armysz;
+    uint32_t armysz;
     msg >> armysz;
 
     for ( Army::iterator it = army.begin(); it != army.end(); ++it )

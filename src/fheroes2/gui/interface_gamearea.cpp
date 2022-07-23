@@ -50,7 +50,7 @@ Interface::GameArea::GameArea( Basic & basic )
     , updateCursor( false )
 {}
 
-fheroes2::Rect Interface::GameArea::GetVisibleTileROI( void ) const
+fheroes2::Rect Interface::GameArea::GetVisibleTileROI() const
 {
     return { _getStartTileId(), _visibleTileCount };
 }
@@ -190,6 +190,24 @@ void Interface::GameArea::Redraw( fheroes2::Image & dst, int flag, bool isPuzzle
         assert( 0 );
         return;
     }
+
+    // Each tile can contain multiple object parts or sprites. Each object part has its own level or in other words layer of rendering.
+    // We need to use a correct order of levels to render objects on tiles. The levels are:
+    // 0 - main and action objects like mines, forest, castle and etc.
+    // 1 - background objects like lake or bushes.
+    // 2 - shadows
+    // 3 - roads, water flaws and cracks. Essentially everything what is a part of terrain.
+    // The correct order of levels is 3 --> 1 --> 2 --> 0.
+    //
+    // There are also two groups of objects: ground objects (bottom layer) and high objects (top layer). High objects are the parts of the objects which are taller than
+    // 1 tile. For example, a castle. All ground objects are drawn first.
+    //
+    // However, there are some objects which appear to be more than 1 tile (32 x 32 pixels) size such as heroes, monsters and boats.
+    // To render all these 'special' objects we need to create a copy of object sprite stacks for each tile, add temporary extra sprites and render them.
+    //
+    // TODO: to proceed with this concept we need to put an object info stored in class Tiles into either groud object stack or high object stack. For example, a tile
+    // TODO: which contains only one top castle sprite would have data only in Tiles class but a hero could be at the same tile. To correctly render objects we need to
+    // TODO: render the hero first and only then render castle's sprite. Side note: from the map format Tiles class must contain only objects from level 1.
 
     std::vector<const Maps::Tiles *> drawList;
     std::vector<const Maps::Tiles *> monsterList;
@@ -513,7 +531,7 @@ void Interface::GameArea::Redraw( fheroes2::Image & dst, int flag, bool isPuzzle
     }
 }
 
-void Interface::GameArea::Scroll( void )
+void Interface::GameArea::Scroll()
 {
     const int32_t shift = 2 << Settings::Get().ScrollSpeed();
     fheroes2::Point offset;
@@ -537,12 +555,11 @@ void Interface::GameArea::Scroll( void )
     scrollDirection = 0;
 }
 
-void Interface::GameArea::SetRedraw( void ) const
+void Interface::GameArea::SetRedraw() const
 {
     interface.SetRedraw( REDRAW_GAMEAREA );
 }
 
-/* scroll area to center point maps */
 void Interface::GameArea::SetCenter( const fheroes2::Point & pt )
 {
     _setCenterToTile( pt );
@@ -581,7 +598,7 @@ fheroes2::Image Interface::GameArea::GenerateUltimateArtifactAreaSurface( const 
     return result;
 }
 
-int Interface::GameArea::GetScrollCursor( void ) const
+int Interface::GameArea::GetScrollCursor() const
 {
     switch ( scrollDirection ) {
     case SCROLL_LEFT | SCROLL_TOP:
@@ -638,7 +655,7 @@ void Interface::GameArea::SetScroll( int direct )
     scrollTime.reset();
 }
 
-void Interface::GameArea::QueueEventProcessing( void )
+void Interface::GameArea::QueueEventProcessing()
 {
     LocalEvent & le = LocalEvent::Get();
     const fheroes2::Point & mp = le.GetMouseCursor();

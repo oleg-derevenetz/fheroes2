@@ -24,9 +24,9 @@
 #include <cassert>
 #include <string>
 
-#include "agg.h"
 #include "agg_image.h"
 #include "army_bar.h"
+#include "audio_manager.h"
 #include "castle.h"
 #include "castle_building_info.h"
 #include "cursor.h"
@@ -43,7 +43,6 @@
 #include "resource.h"
 #include "settings.h"
 #include "statusbar.h"
-#include "text.h"
 #include "tools.h"
 #include "translations.h"
 #include "ui_castle.h"
@@ -165,8 +164,11 @@ namespace
             fheroes2::Blit( fheroes2::AGG::GetICN( ICN::STRIP, 3 ), display, pt.x + 5, pt.y + 361 );
         }
 
-        if ( !hero2 )
-            fheroes2::Blit( fheroes2::AGG::GetICN( ICN::STRIP, 11 ), display, pt.x + 112, pt.y + 361 );
+        if ( !hero2 ) {
+            const fheroes2::Sprite & backgroundImage = fheroes2::AGG::GetICN( ICN::STRIP, 11 );
+
+            fheroes2::Blit( backgroundImage, display, pt.x + 112, pt.y + 361 );
+        }
     }
 
     std::string getDateString()
@@ -258,7 +260,7 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
 
     const fheroes2::StandardWindow background( fheroes2::Display::DEFAULT_WIDTH, fheroes2::Display::DEFAULT_HEIGHT );
 
-    AGG::PlayMusic( MUS::FromRace( race ), true, true );
+    AudioManager::PlayMusicAsync( MUS::FromRace( race ), Music::PlaybackMode::RESUME_AND_PLAY_INFINITE );
 
     int alphaHero = 255;
     CastleDialog::FadeBuilding fadeBuilding;
@@ -279,7 +281,7 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
         }
 
         if ( build != BUILD_NOTHING ) {
-            AGG::PlaySound( M82::BUILDTWN );
+            AudioManager::PlaySound( M82::BUILDTWN );
             fadeBuilding.StartFadeBuilding( build );
         }
 
@@ -288,7 +290,7 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
 
             generateHeroImage( surfaceHero, heroes );
 
-            AGG::PlaySound( M82::BUILDTWN );
+            AudioManager::PlaySound( M82::BUILDTWN );
             alphaHero = 0;
         }
     }
@@ -341,7 +343,6 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
     bottomArmyBar.SetHSpace( 6 );
 
     if ( heroes.Guest() ) {
-        heroes.Guest()->MovePointsScaleFixed();
         bottomArmyBar.SetArmy( &heroes.Guest()->GetArmy() );
 
         if ( alphaHero != 0 ) {
@@ -621,7 +622,7 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
                                 Dialog::Message( _( "Town" ), _( "This town may not be upgraded to a castle." ), Font::BIG, Dialog::OK );
                             }
                             else if ( Dialog::OK == DialogBuyCastle( true ) ) {
-                                AGG::PlaySound( M82::BUILDTWN );
+                                AudioManager::PlaySound( M82::BUILDTWN );
                                 fadeBuilding.StartFadeBuilding( BUILD_CASTLE );
                             }
                             break;
@@ -643,7 +644,7 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
                             }
 
                             if ( build != BUILD_NOTHING ) {
-                                AGG::PlaySound( M82::BUILDTWN );
+                                AudioManager::PlaySound( M82::BUILDTWN );
                                 fadeBuilding.StartFadeBuilding( build );
                             }
 
@@ -657,7 +658,7 @@ Castle::CastleDialogReturnValue Castle::OpenDialog( const bool readOnly, const b
                                     topArmyBar.Redraw();
                                     RedrawIcons( *this, CastleHeroes( nullptr, heroes.Guard() ), cur_pt );
                                 }
-                                AGG::PlaySound( M82::BUILDTWN );
+                                AudioManager::PlaySound( M82::BUILDTWN );
 
                                 bottomArmyBar.SetArmy( &heroes.Guest()->GetArmy() );
                                 generateHeroImage( surfaceHero, heroes );

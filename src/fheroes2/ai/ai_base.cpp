@@ -106,7 +106,7 @@ namespace AI
         return std::string();
     }
 
-    void Base::HeroesActionComplete( Heroes & /*hero*/, const MP2::MapObjectType /*objectType*/ )
+    void Base::HeroesActionComplete( Heroes & /*hero*/, int32_t /* tileIndex*/, const MP2::MapObjectType /*objectType*/ )
     {
         // Do nothing.
     }
@@ -119,18 +119,6 @@ namespace AI
     void Base::HeroesPostLoad( Heroes & )
     {
         // Do nothing.
-    }
-
-    bool Base::HeroesGetTask( Heroes & hero )
-    {
-        // stop hero
-        hero.GetPath().Reset();
-        return false;
-    }
-
-    bool Base::HeroesCanMove( const Heroes & hero )
-    {
-        return hero.MayStillMove( false, false ) && !hero.Modes( Heroes::MOVED );
     }
 
     StreamBase & operator<<( StreamBase & msg, const AI::Base & instance )

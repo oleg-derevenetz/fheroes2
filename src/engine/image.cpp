@@ -21,6 +21,7 @@
 #include "image.h"
 #include "image_palette.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
@@ -425,7 +426,7 @@ namespace fheroes2
         , _height( 0 )
         , _singleLayer( false )
     {
-        resize( width_, height_ );
+        Image::resize( width_, height_ );
     }
 
     Image::Image( const Image & image_ )
@@ -1831,6 +1832,54 @@ namespace fheroes2
     uint8_t GetColorId( uint8_t red, uint8_t green, uint8_t blue )
     {
         return GetPALColorId( red / 4, green / 4, blue / 4 );
+    }
+
+    std::vector<uint8_t> getTransformTable( const fheroes2::Image & in, const fheroes2::Image & out, int32_t x, int32_t y, int32_t width, int32_t height )
+    {
+        std::vector<uint8_t> table( 256 );
+        for ( size_t i = 0; i < table.size(); ++i ) {
+            table[i] = static_cast<uint8_t>( i );
+        }
+
+        if ( !Verify( in, x, y, width, height ) ) {
+            return table;
+        }
+
+        if ( in.width() != out.width() || in.height() != out.height() ) {
+            return table;
+        }
+
+        const int32_t imageWidth = in.width();
+
+        const int32_t offset = y * imageWidth + x;
+
+        const uint8_t * imageInY = in.image() + offset;
+        const uint8_t * imageInYEnd = imageInY + height * imageWidth;
+        const uint8_t * imageOutY = out.image() + offset;
+        const uint8_t * transformInY = in.transform() + offset;
+        const uint8_t * transformOutY = out.transform() + offset;
+
+        for ( ; imageInY != imageInYEnd; imageInY += imageWidth, transformInY += imageWidth, imageOutY += imageWidth, transformOutY += imageWidth ) {
+            const uint8_t * imageInX = imageInY;
+            const uint8_t * transformInX = transformInY;
+            const uint8_t * imageOutX = imageOutY;
+            const uint8_t * transformOutX = transformOutY;
+            const uint8_t * imageInXEnd = imageInX + width;
+
+            for ( ; imageInX != imageInXEnd; ++imageInX, ++transformInX, ++imageOutX, ++transformOutX ) {
+                if ( *transformInX != *transformOutX ) {
+                    continue;
+                }
+
+                if ( *transformInX != 0 ) {
+                    continue;
+                }
+
+                table[*imageInX] = *imageOutX;
+            }
+        }
+
+        return table;
     }
 
     Sprite makeShadow( const Sprite & in, const Point & shadowOffset, const uint8_t transformId )

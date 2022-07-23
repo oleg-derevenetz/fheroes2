@@ -24,6 +24,7 @@
 #include "spell.h"
 #include "artifact.h"
 #include "heroes_base.h"
+#include "monster.h"
 #include "race.h"
 #include "rand.h"
 #include "resource.h"
@@ -88,8 +89,8 @@ spellstats_t spells[] = {
     { gettext_noop( "Cold Ray" ), 6, 0, 0, 36, 20, gettext_noop( "Drains body heat from a single enemy unit." ) },
     { gettext_noop( "Cold Ring" ), 9, 0, 0, 35, 10, gettext_noop( "Drains body heat from all units surrounding the center point, but not including the center point." ) },
     { gettext_noop( "Disrupting Ray" ), 7, 0, 0, 34, 3, gettext_noop( "Reduces the defense rating of an enemy unit by three." ) },
-    { gettext_noop( "Death Ripple" ), 6, 0, 0, 28, 5, gettext_noop( "Damages all living (non-undead) units in the battle." ) },
-    { gettext_noop( "Death Wave" ), 10, 0, 0, 29, 10,
+    { gettext_noop( "Death Ripple" ), 6, 0, 0, 29, 5, gettext_noop( "Damages all living (non-undead) units in the battle." ) },
+    { gettext_noop( "Death Wave" ), 10, 0, 0, 28, 10,
       gettext_noop( "Damages all living (non-undead) units in the battle.  This spell is an improved version of Death Ripple." ) },
     { gettext_noop( "Dragon Slayer" ), 6, 0, 0, 32, 5, gettext_noop( "Greatly increases a unit's attack skill vs. Dragons." ) },
     { gettext_noop( "Blood Lust" ), 3, 0, 0, 27, 3, gettext_noop( "Increases a unit's attack skill." ) },
@@ -134,12 +135,12 @@ spellstats_t spells[] = {
       gettext_noop( "Turns the affected creature into stone.  A petrified creature receives half damage from a direct attack." ) },
 };
 
-const char * Spell::GetName( void ) const
+const char * Spell::GetName() const
 {
     return _( spells[id].name );
 }
 
-const char * Spell::GetDescription( void ) const
+const char * Spell::GetDescription() const
 {
     return _( spells[id].description );
 }
@@ -202,7 +203,40 @@ uint32_t Spell::spellPoints( const HeroBase * hero ) const
     return static_cast<uint32_t>( spellCost );
 }
 
-int Spell::Level( void ) const
+double Spell::getStrategicValue( double armyStrength, uint32_t currentSpellPoints, int spellPower ) const
+{
+    const uint32_t spellCost = spellPoints();
+    const uint32_t casts = spellCost ? std::min( 10U, currentSpellPoints / spellCost ) : 0;
+
+    // use quadratic formula to diminish returns from subsequent spell casts, (up to x5 when spell has 10 uses)
+    const double amountModifier = ( casts == 1 ) ? 1 : casts - ( 0.05 * casts * casts );
+
+    if ( isAdventure() ) {
+        // AI uses Dimension door and View All only spells right now
+        if ( id == Spell::DIMENSIONDOOR ) {
+            return 500.0 * amountModifier;
+        }
+        if ( id == Spell::VIEWALL ) {
+            return 500.0;
+        }
+        return 0.0;
+    }
+
+    if ( isDamage() ) {
+        // Benchmark for Lightning for 20 power * 20 knowledge (maximum uses) is 2500.0
+        return amountModifier * Damage() * spellPower;
+    }
+    // These high impact spells can turn tide of battle
+    if ( isResurrect() || isMassActions() || id == Spell::BLIND || id == Spell::PARALYZE ) {
+        return armyStrength * 0.1 * amountModifier;
+    }
+    if ( isSummon() ) {
+        return Monster( id ).GetMonsterStrength() * ExtraValue() * spellPower * amountModifier;
+    }
+    return armyStrength * 0.04 * amountModifier;
+}
+
+int Spell::Level() const
 {
     switch ( id ) {
     case BLESS:
@@ -292,7 +326,7 @@ int Spell::Level( void ) const
     return 0;
 }
 
-bool Spell::isCombat( void ) const
+bool Spell::isCombat() const
 {
     switch ( id ) {
     case NONE:
@@ -336,7 +370,7 @@ bool Spell::isGuardianType() const
     return false;
 }
 
-u32 Spell::Damage( void ) const
+uint32_t Spell::Damage() const
 {
     switch ( id ) {
     case ARROW:
@@ -362,7 +396,7 @@ u32 Spell::Damage( void ) const
     return 0;
 }
 
-bool Spell::isMindInfluence( void ) const
+bool Spell::isMindInfluence() const
 {
     switch ( id ) {
     case BLIND:
@@ -378,12 +412,12 @@ bool Spell::isMindInfluence( void ) const
     return false;
 }
 
-u32 Spell::IndexSprite( void ) const
+uint32_t Spell::IndexSprite() const
 {
     return spells[id].imageId;
 }
 
-u32 Spell::Restore( void ) const
+uint32_t Spell::Restore() const
 {
     switch ( id ) {
     case Spell::CURE:
@@ -397,7 +431,7 @@ u32 Spell::Restore( void ) const
     return Resurrect();
 }
 
-u32 Spell::Resurrect( void ) const
+uint32_t Spell::Resurrect() const
 {
     switch ( id ) {
     case Spell::ANIMATEDEAD:
@@ -412,7 +446,7 @@ u32 Spell::Resurrect( void ) const
     return 0;
 }
 
-u32 Spell::ExtraValue( void ) const
+uint32_t Spell::ExtraValue() const
 {
     return spells[id].extraValue;
 }
@@ -441,7 +475,7 @@ Spell Spell::RandAdventure( int lvl )
     return res.isValid() ? res : RandCombat( lvl );
 }
 
-bool Spell::isUndeadOnly( void ) const
+bool Spell::isUndeadOnly() const
 {
     switch ( id ) {
     case ANIMATEDEAD:
@@ -456,7 +490,7 @@ bool Spell::isUndeadOnly( void ) const
     return false;
 }
 
-bool Spell::isALiveOnly( void ) const
+bool Spell::isALiveOnly() const
 {
     switch ( id ) {
     case BLESS:
@@ -513,7 +547,7 @@ bool Spell::isSingleTarget() const
     return false;
 }
 
-bool Spell::isApplyWithoutFocusObject( void ) const
+bool Spell::isApplyWithoutFocusObject() const
 {
     if ( isMassActions() || isSummon() )
         return true;
@@ -535,7 +569,7 @@ bool Spell::isApplyWithoutFocusObject( void ) const
     return false;
 }
 
-bool Spell::isSummon( void ) const
+bool Spell::isSummon() const
 {
     switch ( id ) {
     case SUMMONEELEMENT:
@@ -567,7 +601,7 @@ bool Spell::isEffectDispel() const
     return false;
 }
 
-bool Spell::isApplyToAnyTroops( void ) const
+bool Spell::isApplyToAnyTroops() const
 {
     switch ( id ) {
     case DISPEL:
@@ -581,7 +615,7 @@ bool Spell::isApplyToAnyTroops( void ) const
     return false;
 }
 
-bool Spell::isApplyToFriends( void ) const
+bool Spell::isApplyToFriends() const
 {
     switch ( id ) {
     case BLESS:
@@ -612,7 +646,7 @@ bool Spell::isApplyToFriends( void ) const
     return false;
 }
 
-bool Spell::isMassActions( void ) const
+bool Spell::isMassActions() const
 {
     switch ( id ) {
     case MASSCURE:
@@ -631,7 +665,7 @@ bool Spell::isMassActions( void ) const
     return false;
 }
 
-bool Spell::isApplyToEnemies( void ) const
+bool Spell::isApplyToEnemies() const
 {
     switch ( id ) {
     case MASSSLOW:

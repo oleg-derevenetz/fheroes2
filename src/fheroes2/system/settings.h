@@ -51,9 +51,12 @@ public:
 
     enum : uint32_t
     {
+        // The following extended options do not affect the overall
+        // game balance and are saved in the binary config file
+        //
         GAME_AUTOSAVE_BEGIN_DAY = 0x10000010,
         GAME_REMEMBER_LAST_FOCUS = 0x10000020,
-        GAME_SAVE_REWRITE_CONFIRM = 0x10000040,
+        // UNUSED = 0x10000040,
         GAME_SHOW_SYSTEM_INFO = 0x10000100,
         // UNUSED = 0x10000200,
         // UNUSED = 0x10000400,
@@ -64,7 +67,11 @@ public:
         GAME_BATTLE_SHOW_DAMAGE = 0x10100000,
         GAME_CONTINUE_AFTER_VICTORY = 0x10200000,
 
-        /* influence on game balance: save to savefile */
+        // The following extended options affect the overall game balance and
+        // are saved both in the binary config file and in the savefile
+        //
+        // TODO: combine them all into one bitset
+        //
         // UNUSED = 0x20000001,
         // UNUSED = 0x20000002,
         WORLD_ALLOW_SET_GUARDIAN = 0x20000008,
@@ -222,6 +229,7 @@ public:
     bool isPriceOfLoyaltySupported() const;
     bool isMonochromeCursorEnabled() const;
     bool isTextSupportModeEnabled() const;
+    bool is3DAudioEnabled() const;
 
     bool LoadedGameVersion() const
     {
@@ -242,10 +250,10 @@ public:
     bool isFirstGameRun() const;
     void resetFirstGameRun();
 
-    bool CanChangeInGame( u32 ) const;
-    bool ExtModes( u32 ) const;
-    void ExtSetModes( u32 );
-    void ExtResetModes( u32 );
+    bool CanChangeInGame( uint32_t ) const;
+    bool ExtModes( uint32_t ) const;
+    void ExtSetModes( uint32_t );
+    void ExtResetModes( uint32_t );
     static std::string ExtName( const uint32_t settingId );
 
     bool ExtHeroBuySpellBookFromShrine() const
@@ -318,11 +326,6 @@ public:
         return ExtModes( GAME_CONTINUE_AFTER_VICTORY );
     }
 
-    bool ExtGameRewriteConfirm() const
-    {
-        return ExtModes( GAME_SAVE_REWRITE_CONFIRM );
-    }
-
     bool ExtGameShowSystemInfo() const
     {
         return ExtModes( GAME_SHOW_SYSTEM_INFO );
@@ -383,6 +386,7 @@ public:
     void setFullScreen( const bool enable );
     void setMonochromeCursor( const bool enable );
     void setTextSupportMode( const bool enable );
+    void set3DAudio( const bool enable );
 
     void SetSoundVolume( int v );
     void SetMusicVolume( int v );
@@ -530,7 +534,7 @@ public:
         return current_maps_file.LossMapsPositionObject();
     }
 
-    u32 LossCountDays() const
+    uint32_t LossCountDays() const
     {
         return current_maps_file.LossCountDays();
     }
@@ -567,11 +571,16 @@ private:
     void BinarySave() const;
     void BinaryLoad();
 
-    BitModes opt_global;
-    BitModes opt_game;
-    BitModes opt_battle;
-    BitModes opt_world;
-    BitModes opt_addons;
+    // Global game options (GLOBAL_), they are saved in the text config file
+    BitModes _optGlobal;
+    // Extended options that do not affect the overall game balance (GAME_),
+    // they are saved in the binary config file
+    BitModes _optExtGame;
+    // Extended options that affect the overall game balance, they are saved
+    // both in the binary config file and in the savefile
+    BitModes _optExtBalance2; // Options with codes starting with 0x2
+    BitModes _optExtBalance3; // Options with codes starting with 0x3
+    BitModes _optExtBalance4; // Options with codes starting with 0x4
 
     int debug;
     fheroes2::Size video_mode;
@@ -580,7 +589,8 @@ private:
     std::string path_program;
 
     std::string _gameLanguage;
-    std::string _loadedFileLanguage; // not a part of save or configuration file
+    // Not saved in the config file or savefile
+    std::string _loadedFileLanguage;
 
     Maps::FileInfo current_maps_file;
 
@@ -596,10 +606,10 @@ private:
     int game_type;
     int preferably_count_players;
 
-    fheroes2::Point pos_radr;
-    fheroes2::Point pos_bttn;
-    fheroes2::Point pos_icon;
-    fheroes2::Point pos_stat;
+    fheroes2::Point pos_radr{ -1, -1 };
+    fheroes2::Point pos_bttn{ -1, -1 };
+    fheroes2::Point pos_icon{ -1, -1 };
+    fheroes2::Point pos_stat{ -1, -1 };
 
     Players players;
 };

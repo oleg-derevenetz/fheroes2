@@ -22,9 +22,9 @@
  ***************************************************************************/
 
 #include "game.h"
-#include "agg.h"
 #include "agg_image.h"
 #include "audio.h"
+#include "audio_manager.h"
 #include "campaign_savedata.h"
 #include "cursor.h"
 #include "dialog.h"
@@ -41,6 +41,8 @@
 #include "text.h"
 #include "translations.h"
 #include "ui_button.h"
+#include "ui_dialog.h"
+#include "ui_text.h"
 #include "ui_tool.h"
 #include "world.h"
 
@@ -78,7 +80,7 @@ namespace
             return nullptr;
         }
 
-        std::unique_ptr<SMKVideoSequence> video( new SMKVideoSequence( videoPath ) );
+        std::unique_ptr<SMKVideoSequence> video = std::make_unique<SMKVideoSequence>( videoPath );
         if ( video->frameCount() < 1 ) {
             return nullptr;
         }
@@ -131,6 +133,15 @@ namespace
         COUT( "Press " << Game::getHotKeyNameByEventId( Game::HotKeyEvent::NEW_WIZARDS_ISLE_CAMPAIGN ) << " to choose Wizard's Isle Campaign." )
         COUT( "Press " << Game::getHotKeyNameByEventId( Game::HotKeyEvent::NEW_DESCENDANTS_CAMPAIGN ) << " to choose Descendants Campaign." )
     }
+
+    void showMissingVideoFilesWindow()
+    {
+        fheroes2::showMessage( fheroes2::Text{ _( "Warning!" ), fheroes2::FontType::normalYellow() },
+                               fheroes2::Text{ _( "Required video files for campaign selection window are missing. "
+                                                  "Please make sure that all necessary files are present in the system." ),
+                                               fheroes2::FontType::normalWhite() },
+                               Dialog::OK );
+    }
 }
 
 fheroes2::GameMode Game::NewStandard()
@@ -164,7 +175,7 @@ fheroes2::GameMode Game::NewHotSeat()
     }
     else {
         conf.SetGameType( Game::TYPE_HOTSEAT );
-        const u32 select = SelectCountPlayers();
+        const uint32_t select = SelectCountPlayers();
         if ( select ) {
             conf.SetPreferablyCountPlayers( select );
             return fheroes2::GameMode::SELECT_SCENARIO;
@@ -226,7 +237,7 @@ fheroes2::GameMode Game::NewSuccessionWarsCampaign()
     Settings::Get().SetGameType( Game::TYPE_CAMPAIGN );
 
     // Reset all sound and music before playing videos
-    AGG::ResetAudio();
+    AudioManager::ResetAudio();
 
     fheroes2::Display & display = fheroes2::Display::instance();
     const fheroes2::Point roiOffset( ( display.width() - display.DEFAULT_WIDTH ) / 2, ( display.height() - display.DEFAULT_HEIGHT ) / 2 );
@@ -244,6 +255,7 @@ fheroes2::GameMode Game::NewSuccessionWarsCampaign()
 
     std::unique_ptr<SMKVideoSequence> video = getVideo( "CHOOSE.SMK" );
     if ( !video ) {
+        showMissingVideoFilesWindow();
         campaignSaveData.setCurrentScenarioInfoId( { Campaign::ROLAND_CAMPAIGN, 0 } );
         return fheroes2::GameMode::SELECT_CAMPAIGN_SCENARIO;
     }
@@ -255,7 +267,7 @@ fheroes2::GameMode Game::NewSuccessionWarsCampaign()
 
     outputNewSuccessionWarsCampaignInTextSupportMode();
 
-    AGG::ResetAudio();
+    AudioManager::ResetAudio();
     Video::ShowVideo( "CHOOSEW.SMK", Video::VideoAction::IGNORE_VIDEO );
 
     const fheroes2::ScreenPaletteRestorer screenRestorer;
@@ -323,6 +335,7 @@ fheroes2::GameMode Game::NewPriceOfLoyaltyCampaign()
 
     if ( !videos[0] ) {
         // File doesn't exist. Fallback to PoL campaign.
+        showMissingVideoFilesWindow();
         return fheroes2::GameMode::SELECT_CAMPAIGN_SCENARIO;
     }
 
@@ -477,9 +490,9 @@ fheroes2::GameMode Game::NewGame()
     outputNewMenuInTextSupportMode();
 
     // Stop all sounds, but not the music
-    Mixer::Stop();
+    AudioManager::stopSounds();
 
-    AGG::PlayMusic( MUS::MAINMENU, true, true );
+    AudioManager::PlayMusicAsync( MUS::MAINMENU, Music::PlaybackMode::RESUME_AND_PLAY_INFINITE );
 
     // reset last save name
     Game::SetLastSavename( "" );
@@ -605,7 +618,7 @@ fheroes2::GameMode Game::NewMulti()
     return fheroes2::GameMode::QUIT_GAME;
 }
 
-u32 Game::SelectCountPlayers( void )
+uint32_t Game::SelectCountPlayers()
 {
     // setup cursor
     const CursorRestorer cursorRestorer( true, Cursor::POINTER );

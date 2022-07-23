@@ -26,10 +26,11 @@
 #include <string>
 
 #include "agg.h"
-#include "audio.h"
+#include "audio_manager.h"
 #include "bin_info.h"
 #include "core.h"
 #include "cursor.h"
+#include "dir.h"
 #include "embedded_image.h"
 #include "game.h"
 #include "game_logo.h"
@@ -129,7 +130,7 @@ namespace
             SDL_ShowCursor( SDL_DISABLE ); // hide system cursor
 
             // Initialize local event processing.
-            LocalEvent::Get().RegisterCycling( fheroes2::PreRenderSystemInfo, fheroes2::PostRenderSystemInfo );
+            LocalEvent::RegisterCycling( fheroes2::PreRenderSystemInfo, fheroes2::PostRenderSystemInfo );
 
             // Update mouse cursor when switching between software emulation and OS mouse modes.
             fheroes2::cursor().registerUpdater( Cursor::Refresh );
@@ -182,6 +183,16 @@ namespace
         DataInitializer( const DataInitializer & ) = delete;
         DataInitializer & operator=( const DataInitializer & ) = delete;
         ~DataInitializer() = default;
+
+        const std::string & getOriginalAGGFilePath() const
+        {
+            return _aggInitializer->getOriginalAGGFilePath();
+        }
+
+        const std::string & getExpansionAGGFilePath() const
+        {
+            return _aggInitializer->getExpansionAGGFilePath();
+        }
 
     private:
         std::unique_ptr<AGG::AGGInitializer> _aggInitializer;
@@ -236,22 +247,27 @@ int main( int argc, char ** argv )
 
         const fheroes2::CoreInitializer coreInitializer( coreComponents );
 
-        if ( Audio::isValid() ) {
-            Mixer::SetChannels( 32 );
-            Mixer::Volume( -1, Mixer::MaxVolume() * conf.SoundVolume() / 10 );
-
-            Music::Volume( Mixer::MaxVolume() * conf.MusicVolume() / 10 );
-            Music::SetFadeIn( 900 );
-        }
-
         DEBUG_LOG( DBG_GAME, DBG_INFO, conf.String() )
 
         const DisplayInitializer displayInitializer;
 
         const DataInitializer dataInitializer;
 
+        ListFiles midiSoundFonts;
+
+        midiSoundFonts.Append( Settings::FindFiles( System::ConcatePath( "files", "soundfonts" ), ".sf2", false ) );
+        midiSoundFonts.Append( Settings::FindFiles( System::ConcatePath( "files", "soundfonts" ), ".sf3", false ) );
+
+#ifdef WITH_DEBUG
+        for ( const std::string & file : midiSoundFonts ) {
+            DEBUG_LOG( DBG_GAME, DBG_INFO, "MIDI SoundFont to load: " << file )
+        }
+#endif
+
+        const AudioManager::AudioInitializer audioInitializer( dataInitializer.getOriginalAGGFilePath(), dataInitializer.getExpansionAGGFilePath(), midiSoundFonts );
+
         // Load palette.
-        fheroes2::setGamePalette( AGG::ReadChunk( "KB.PAL" ) );
+        fheroes2::setGamePalette( AGG::getDataFromAggFile( "KB.PAL" ) );
         fheroes2::Display::instance().changePalette( nullptr, true );
 
         // load BIN data
@@ -274,7 +290,7 @@ int main( int argc, char ** argv )
         Game::mainGameLoop( conf.isFirstGameRun() );
     }
     catch ( const std::exception & ex ) {
-        ERROR_LOG( "Exception '" << ex.what() << "' occured during application runtime." )
+        ERROR_LOG( "Exception '" << ex.what() << "' occurred during application runtime." )
         return EXIT_FAILURE;
     }
 

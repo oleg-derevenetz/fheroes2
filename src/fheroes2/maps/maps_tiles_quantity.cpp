@@ -25,7 +25,7 @@
 #include "settings.h"
 #include "world.h"
 
-bool Maps::Tiles::QuantityIsValid( void ) const
+bool Maps::Tiles::QuantityIsValid() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_ARTIFACT:
@@ -66,12 +66,12 @@ bool Maps::Tiles::QuantityIsValid( void ) const
     return false;
 }
 
-int Maps::Tiles::QuantityVariant( void ) const
+int Maps::Tiles::QuantityVariant() const
 {
     return quantity2 >> 4;
 }
 
-int Maps::Tiles::QuantityExt( void ) const
+int Maps::Tiles::QuantityExt() const
 {
     return 0x0f & quantity2;
 }
@@ -88,7 +88,7 @@ void Maps::Tiles::QuantitySetExt( int ext )
     quantity2 |= ( 0x0f & ext );
 }
 
-Skill::Secondary Maps::Tiles::QuantitySkill( void ) const
+Skill::Secondary Maps::Tiles::QuantitySkill() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_ARTIFACT:
@@ -124,7 +124,7 @@ void Maps::Tiles::QuantitySetSkill( int skill )
     }
 }
 
-Spell Maps::Tiles::QuantitySpell( void ) const
+Spell Maps::Tiles::QuantitySpell() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_ARTIFACT:
@@ -159,7 +159,7 @@ void Maps::Tiles::QuantitySetSpell( int spell )
     }
 }
 
-Artifact Maps::Tiles::QuantityArtifact( void ) const
+Artifact Maps::Tiles::QuantityArtifact() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_WAGON:
@@ -195,13 +195,13 @@ void Maps::Tiles::QuantitySetArtifact( int art )
     quantity1 = art;
 }
 
-void Maps::Tiles::QuantitySetResource( int res, u32 count )
+void Maps::Tiles::QuantitySetResource( int res, uint32_t count )
 {
     quantity1 = res;
     quantity2 = res == Resource::GOLD ? count / 100 : count;
 }
 
-u32 Maps::Tiles::QuantityGold( void ) const
+uint32_t Maps::Tiles::QuantityGold() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_ARTIFACT:
@@ -262,7 +262,7 @@ u32 Maps::Tiles::QuantityGold( void ) const
     return 0;
 }
 
-ResourceCount Maps::Tiles::QuantityResourceCount( void ) const
+ResourceCount Maps::Tiles::QuantityResourceCount() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_ARTIFACT:
@@ -292,7 +292,7 @@ ResourceCount Maps::Tiles::QuantityResourceCount( void ) const
     return ResourceCount( quantity1, Resource::GOLD == quantity1 ? QuantityGold() : quantity2 );
 }
 
-Funds Maps::Tiles::QuantityFunds( void ) const
+Funds Maps::Tiles::QuantityFunds() const
 {
     const ResourceCount & rc = QuantityResourceCount();
 
@@ -344,7 +344,7 @@ void Maps::Tiles::QuantitySetColor( int col )
     }
 }
 
-int Maps::Tiles::QuantityColor( void ) const
+int Maps::Tiles::QuantityColor() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_BARRIER:
@@ -356,7 +356,7 @@ int Maps::Tiles::QuantityColor( void ) const
     }
 }
 
-Monster Maps::Tiles::QuantityMonster( void ) const
+Monster Maps::Tiles::QuantityMonster() const
 {
     switch ( GetObject( false ) ) {
     case MP2::OBJ_WATCHTOWER:
@@ -420,12 +420,12 @@ Monster Maps::Tiles::QuantityMonster( void ) const
     return MP2::isCaptureObject( GetObject( false ) ) ? Monster( world.GetCapturedObject( GetIndex() ).GetTroop().GetID() ) : Monster( Monster::UNKNOWN );
 }
 
-Troop Maps::Tiles::QuantityTroop( void ) const
+Troop Maps::Tiles::QuantityTroop() const
 {
     return MP2::isCaptureObject( GetObject( false ) ) ? world.GetCapturedObject( GetIndex() ).GetTroop() : Troop( QuantityMonster(), MonsterCount() );
 }
 
-void Maps::Tiles::QuantityReset( void )
+void Maps::Tiles::QuantityReset()
 {
     // TODO: don't modify first 2 bits of quantity1.
     quantity1 = 0;
@@ -542,7 +542,7 @@ void Maps::Tiles::QuantityUpdate( bool isFirstLoad )
 
     case MP2::OBJ_RESOURCE: {
         const int res = Resource::FromIndexSprite( objectIndex );
-        u32 count = 0;
+        uint32_t count = 0;
 
         switch ( res ) {
         case Resource::GOLD:
@@ -652,7 +652,7 @@ void Maps::Tiles::QuantityUpdate( bool isFirstLoad )
         percents.Push( 2, 10 );
 
         int art = Artifact::UNKNOWN;
-        u32 gold = 0;
+        uint32_t gold = 0;
 
         // variant
         switch ( percents.Get() ) {
@@ -689,7 +689,7 @@ void Maps::Tiles::QuantityUpdate( bool isFirstLoad )
             percents.Push( 4, 5 );
 
             int art = Artifact::UNKNOWN;
-            u32 gold = 0;
+            uint32_t gold = 0;
 
             // variant
             switch ( percents.Get() ) {
@@ -898,44 +898,15 @@ void Maps::Tiles::QuantityUpdate( bool isFirstLoad )
     }
 }
 
-int Maps::Tiles::MonsterJoinCondition( void ) const
+uint32_t Maps::Tiles::MonsterCount() const
 {
-    return mp2_object == MP2::OBJ_MONSTER ? ( 0x03 & quantity3 ) : 0;
+    // TODO: avoid this hacky way of storing data.
+    return ( static_cast<uint32_t>( quantity1 ) << 8 ) | quantity2;
 }
 
-void Maps::Tiles::MonsterSetJoinCondition( int cond )
+void Maps::Tiles::MonsterSetCount( uint32_t count )
 {
-    quantity3 &= 0xFC;
-    quantity3 |= ( cond & 0x03 );
-}
-
-void Maps::Tiles::MonsterSetFixedCount( void )
-{
-    quantity3 |= 0x80;
-}
-
-bool Maps::Tiles::MonsterFixedCount( void ) const
-{
-    return mp2_object == MP2::OBJ_MONSTER ? ( quantity3 & 0x80 ) != 0 : false;
-}
-
-bool Maps::Tiles::MonsterJoinConditionSkip( void ) const
-{
-    return Monster::JOIN_CONDITION_SKIP == MonsterJoinCondition();
-}
-
-bool Maps::Tiles::MonsterJoinConditionFree( void ) const
-{
-    return Monster::JOIN_CONDITION_FREE == MonsterJoinCondition();
-}
-
-u32 Maps::Tiles::MonsterCount( void ) const
-{
-    return ( static_cast<u32>( quantity1 ) << 8 ) | quantity2;
-}
-
-void Maps::Tiles::MonsterSetCount( u32 count )
-{
+    // TODO: avoid this hacky way of storing data.
     quantity1 = count >> 8;
     quantity2 = 0x00FF & count;
 }
@@ -954,8 +925,9 @@ void Maps::Tiles::PlaceMonsterOnTile( Tiles & tile, const Monster & mons, const 
     tile.objectTileset = 48; // MONS32.ICN
     tile.objectIndex = mons.GetSpriteIndex();
 
-    if ( count ) {
-        tile.MonsterSetFixedCount();
+    const bool setDefinedCount = ( count > 0 );
+
+    if ( setDefinedCount ) {
         tile.MonsterSetCount( count );
     }
     else {
@@ -964,18 +936,22 @@ void Maps::Tiles::PlaceMonsterOnTile( Tiles & tile, const Monster & mons, const 
 
     if ( mons.GetID() == Monster::GHOST || mons.isElemental() ) {
         // Ghosts and elementals never join hero's army.
-        tile.MonsterSetJoinCondition( Monster::JOIN_CONDITION_SKIP );
+        setMonsterOnTileJoinCondition( tile, Monster::JOIN_CONDITION_SKIP );
     }
-    else if ( tile.MonsterFixedCount() || ( world.GetWeekType().GetType() == WeekName::MONSTERS && world.GetWeekType().GetMonster() == mons.GetID() ) ) {
+    else if ( setDefinedCount || ( world.GetWeekType().GetType() == WeekName::MONSTERS && world.GetWeekType().GetMonster() == mons.GetID() ) ) {
+        // Wandering monsters with the number of units specified by the map designer are always considered as "hostile" and always join only for money.
+
         // Monsters will be willing to join for some amount of money.
-        tile.MonsterSetJoinCondition( Monster::JOIN_CONDITION_MONEY );
+        setMonsterOnTileJoinCondition( tile, Monster::JOIN_CONDITION_MONEY );
     }
     else {
         // 20% chance for join
-        if ( 3 > Rand::Get( 1, 10 ) )
-            tile.MonsterSetJoinCondition( Monster::JOIN_CONDITION_FREE );
-        else
-            tile.MonsterSetJoinCondition( Monster::JOIN_CONDITION_MONEY );
+        if ( 3 > Rand::Get( 1, 10 ) ) {
+            setMonsterOnTileJoinCondition( tile, Monster::JOIN_CONDITION_FREE );
+        }
+        else {
+            setMonsterOnTileJoinCondition( tile, Monster::JOIN_CONDITION_MONEY );
+        }
     }
 }
 
@@ -1012,7 +988,7 @@ void Maps::Tiles::UpdateMonsterInfo( Tiles & tile )
         tile.objectIndex = mons.GetID() - 1; // ICN::MONS32 start from PEASANT
     }
 
-    u32 count = 0;
+    uint32_t count = 0;
 
     // update count (mp2 format)
     if ( tile.quantity1 || tile.quantity2 ) {
@@ -1106,8 +1082,36 @@ void Maps::Tiles::UpdateMonsterPopulation( Tiles & tile )
     if ( troopCount == 0 ) {
         tile.MonsterSetCount( troop.GetRNDSize( false ) );
     }
-    else if ( !tile.MonsterFixedCount() ) {
+    else {
         const uint32_t bonusUnit = ( Rand::Get( 1, 7 ) <= ( troopCount % 7 ) ) ? 1 : 0;
         tile.MonsterSetCount( troopCount * 8 / 7 + bonusUnit );
+    }
+}
+
+namespace Maps
+{
+    void setSpellOnTile( Tiles & tile, const int32_t spellId )
+    {
+        tile.setAdditionalMetadata( spellId );
+    }
+
+    int32_t getSpellIdFromTile( const Tiles & tile )
+    {
+        return tile.getAdditionalMetadata();
+    }
+
+    void setMonsterOnTileJoinCondition( Tiles & tile, const int32_t condition )
+    {
+        tile.setAdditionalMetadata( condition );
+    }
+
+    bool isMonsterOnTileJoinConditionSkip( const Tiles & tile )
+    {
+        return tile.GetObject() == MP2::OBJ_MONSTER && tile.getAdditionalMetadata() == Monster::JOIN_CONDITION_SKIP;
+    }
+
+    bool isMonsterOnTileJoinConditionFree( const Tiles & tile )
+    {
+        return tile.GetObject() == MP2::OBJ_MONSTER && tile.getAdditionalMetadata() == Monster::JOIN_CONDITION_FREE;
     }
 }

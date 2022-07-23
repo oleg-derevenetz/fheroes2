@@ -26,7 +26,6 @@
 #include "heroes.h"
 #include "kingdom.h"
 #include "serialize.h"
-#include "text.h"
 #include "ui_dialog.h"
 #include "ui_text.h"
 #include "world.h"
@@ -93,7 +92,7 @@ StreamBase & operator>>( StreamBase & sb, ActionMessage & st )
 
 StreamBase & operator<<( StreamBase & sb, const ListActions & st )
 {
-    sb << static_cast<u32>( st.size() );
+    sb << static_cast<uint32_t>( st.size() );
     for ( ListActions::const_iterator it = st.begin(); it != st.end(); ++it ) {
         sb << ( *it )->GetType();
 
@@ -139,12 +138,12 @@ StreamBase & operator<<( StreamBase & sb, const ListActions & st )
 
 StreamBase & operator>>( StreamBase & sb, ListActions & st )
 {
-    u32 size = 0;
+    uint32_t size = 0;
     sb >> size;
 
     st.clear();
 
-    for ( u32 ii = 0; ii < size; ++ii ) {
+    for ( uint32_t ii = 0; ii < size; ++ii ) {
         int type;
         sb >> type;
 
@@ -192,14 +191,15 @@ StreamBase & operator>>( StreamBase & sb, ListActions & st )
     return sb;
 }
 
-bool ActionAccess::Action( const ActionAccess * act, s32 index, Heroes & hero )
+bool ActionAccess::Action( const ActionAccess * act, int32_t index, Heroes & hero )
 {
     if ( act ) {
         if ( act->cancelAfterFirstVisit && hero.isVisited( world.GetTiles( index ), Visit::GLOBAL ) )
             return false;
 
-        if ( !act->message.empty() )
-            Dialog::Message( "", act->message, Font::BIG, Dialog::OK );
+        if ( !act->message.empty() ) {
+            fheroes2::showMessage( fheroes2::Text( "", {} ), fheroes2::Text( act->message, fheroes2::FontType::normalWhite() ), Dialog::OK );
+        }
 
         if ( hero.isControlAI() && !act->allowComputer )
             return false;
@@ -217,8 +217,9 @@ bool ActionAccess::Action( const ActionAccess * act, s32 index, Heroes & hero )
 bool ActionDefault::Action( const ActionDefault * act )
 {
     if ( act ) {
-        if ( !act->message.empty() )
-            Dialog::Message( "", act->message, Font::BIG, Dialog::OK );
+        if ( !act->message.empty() ) {
+            fheroes2::showMessage( fheroes2::Text( "", {} ), fheroes2::Text( act->message, fheroes2::FontType::normalWhite() ), Dialog::OK );
+        }
         return act->enabled;
     }
 
@@ -255,8 +256,9 @@ bool ActionResources::Action( ActionResources * act, const Heroes & hero )
 bool ActionMessage::Action( const ActionMessage * act )
 {
     if ( act ) {
-        if ( !act->message.empty() )
-            Dialog::Message( "", act->message, Font::BIG, Dialog::OK );
+        if ( !act->message.empty() ) {
+            fheroes2::showMessage( fheroes2::Text( "", {} ), fheroes2::Text( act->message, fheroes2::FontType::normalWhite() ), Dialog::OK );
+        }
         return true;
     }
 

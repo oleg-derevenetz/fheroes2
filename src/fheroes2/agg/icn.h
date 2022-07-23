@@ -24,7 +24,7 @@
 #ifndef H2ICN_H
 #define H2ICN_H
 
-#include "types.h"
+#include <cstdint>
 
 namespace ICN
 {
@@ -968,13 +968,25 @@ namespace ICN
         MONO_CURSOR_SPELBW,
         MONO_CURSOR_CMSSBW,
 
+        ESPANBKG_EVIL,
+        RECR2BKG_EVIL,
+        STONEBAK_EVIL,
+        WELLBKG_EVIL,
+        CASLWIND_EVIL,
+        CASLXTRA_EVIL,
+        RECRBKG_EVIL,
+        STRIP_BACKGROUND_EVIL,
+
+        GOOD_CAMPAIGN_BUTTONS,
+        EVIL_CAMPAIGN_BUTTONS,
+
         // IMPORTANT! Put any new entry just above this one.
         LASTICN
     };
 
     const char * GetString( int );
-    u32 AnimationFrame( int icn, u32 start, u32 ticket, bool quantity = false );
-    bool HighlyObjectSprite( int icn, u32 );
+    uint32_t AnimationFrame( int icn, uint32_t start, uint32_t ticket, bool quantity = false );
+    bool HighlyObjectSprite( int icn, uint32_t );
     int PORTxxxx( int heroId );
 
     int Get4Captain( int race );

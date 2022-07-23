@@ -60,9 +60,6 @@
 #include "serialize.h"
 #include "settings.h"
 #include "spell.h"
-#ifdef WITH_DEBUG
-#include "text.h"
-#endif
 #include "til.h"
 #include "trees.h"
 #include "world.h"
@@ -340,7 +337,7 @@ namespace
             }
         }
 
-        return imageMap.emplace( passable, std::move( sf ) ).first->second;
+        return imageMap.try_emplace( passable, std::move( sf ) ).first->second;
     }
 #endif
 
@@ -420,6 +417,11 @@ namespace
 
         return false;
     }
+
+    uint32_t PackTileSpriteIndex( uint32_t index, uint32_t shape ) /* index max: 0x3FFF, shape value: 0, 1, 2, 3 */
+    {
+        return ( shape << 14 ) | ( 0x3FFF & index );
+    }
 }
 
 Maps::TilesAddon::TilesAddon()
@@ -439,12 +441,12 @@ Maps::TilesAddon::TilesAddon( const uint8_t lv, const uint32_t uid, const uint8_
 std::string Maps::TilesAddon::String( int lvl ) const
 {
     std::ostringstream os;
-    os << "----------------" << lvl << "--------" << std::endl
-       << "uniq            : " << uniq << std::endl
-       << "tileset         : " << static_cast<int>( object ) << ", (" << ICN::GetString( MP2::GetICNObject( object ) ) << ")" << std::endl
+    os << "--------- Level " << lvl << " --------" << std::endl
+       << "UID             : " << uniq << std::endl
+       << "tileset         : " << static_cast<int>( object ) << " (" << ICN::GetString( MP2::GetICNObject( object ) ) << ")" << std::endl
        << "index           : " << static_cast<int>( index ) << std::endl
-       << "level           : " << static_cast<int>( level ) << ", (" << static_cast<int>( level % 4 ) << ")" << std::endl
-       << "shadow          : " << isShadow( *this ) << std::endl;
+       << "level           : " << static_cast<int>( level ) << " (" << static_cast<int>( level % 4 ) << ")" << std::endl
+       << "shadow          : " << ( isShadow( *this ) ? "true" : "false" ) << std::endl;
     return os.str();
 }
 
@@ -538,11 +540,14 @@ bool Maps::TilesAddon::isRoad() const
 
     // castle or town gate
     case ICN::OBJNTOWN:
-    case ICN::OBJNTWRD:
         if ( 13 == index || 29 == index || 45 == index || 61 == index || 77 == index || 93 == index || 109 == index || 125 == index || 141 == index || 157 == index
              || 173 == index || 189 == index )
             return true;
         break;
+
+    // Random castle or town gate.
+    case ICN::OBJNTWRD:
+        return ( index == 13 || index == 29 );
 
     default:
         break;
@@ -693,24 +698,19 @@ std::pair<int, int> Maps::Tiles::ColorRaceFromHeroSprite( const uint32_t heroSpr
 }
 
 /* Maps::Addons */
-void Maps::Addons::Remove( u32 uniq )
+void Maps::Addons::Remove( uint32_t uniq )
 {
     remove_if( [uniq]( const TilesAddon & v ) { return v.isUniq( uniq ); } );
 }
 
-u32 PackTileSpriteIndex( u32 index, u32 shape ) /* index max: 0x3FFF, shape value: 0, 1, 2, 3 */
-{
-    return ( shape << 14 ) | ( 0x3FFF & index );
-}
-
-void Maps::Tiles::Init( s32 index, const MP2::mp2tile_t & mp2 )
+void Maps::Tiles::Init( int32_t index, const MP2::mp2tile_t & mp2 )
 {
     tilePassable = DIRECTION_ALL;
 
     _level = mp2.quantity1 & 0x03;
     quantity1 = mp2.quantity1;
     quantity2 = mp2.quantity2;
-    quantity3 = 0;
+    additionalMetadata = 0;
     fog_colors = Color::ALL;
 
     SetTile( mp2.surfaceType, mp2.flags );
@@ -735,7 +735,7 @@ void Maps::Tiles::Init( s32 index, const MP2::mp2tile_t & mp2 )
     AddonsPushLevel2( mp2 );
 }
 
-Heroes * Maps::Tiles::GetHeroes( void ) const
+Heroes * Maps::Tiles::GetHeroes() const
 {
     return MP2::OBJ_HEROES == mp2_object && heroID ? world.GetHeroes( heroID - 1 ) : nullptr;
 }
@@ -762,7 +762,7 @@ void Maps::Tiles::SetHeroes( Heroes * hero )
     }
 }
 
-fheroes2::Point Maps::Tiles::GetCenter( void ) const
+fheroes2::Point Maps::Tiles::GetCenter() const
 {
     return Maps::GetPoint( _index );
 }
@@ -860,12 +860,12 @@ void Maps::Tiles::resetObjectSprite()
     objectIndex = 255;
 }
 
-void Maps::Tiles::SetTile( u32 sprite_index, u32 shape )
+void Maps::Tiles::SetTile( uint32_t sprite_index, uint32_t shape )
 {
     pack_sprite_index = PackTileSpriteIndex( sprite_index, shape );
 }
 
-const fheroes2::Image & Maps::Tiles::GetTileSurface( void ) const
+const fheroes2::Image & Maps::Tiles::GetTileSurface() const
 {
     return fheroes2::AGG::GetTIL( TIL::GROUND32, TileSpriteIndex(), TileSpriteShape() );
 }
@@ -1049,7 +1049,7 @@ void Maps::Tiles::UpdateRegion( uint32_t newRegionID )
     }
 }
 
-u32 Maps::Tiles::GetObjectUID() const
+uint32_t Maps::Tiles::GetObjectUID() const
 {
     return uniq;
 }
@@ -1067,6 +1067,8 @@ bool Maps::Tiles::isClearGround() const
     case MP2::OBJ_ZERO:
     case MP2::OBJ_COAST:
         return true;
+    case MP2::OBJ_BOAT:
+        return false;
 
     default:
         break;
@@ -1153,9 +1155,9 @@ void Maps::Tiles::AddonsSort()
     // Level 2 objects don't have any rendering priorities so they should be rendered first in queue first to render.
 }
 
-int Maps::Tiles::GetGround( void ) const
+int Maps::Tiles::GetGround() const
 {
-    const u32 index = TileSpriteIndex();
+    const uint32_t index = TileSpriteIndex();
 
     // list grounds from GROUND32.TIL
     if ( 30 > index )
@@ -1224,7 +1226,7 @@ void Maps::Tiles::RedrawAddon( fheroes2::Image & dst, const Addons & addon, cons
         return;
 
     for ( Addons::const_iterator it = addon.begin(); it != addon.end(); ++it ) {
-        const u8 index = ( *it ).index;
+        const uint8_t index = ( *it ).index;
         const int icn = MP2::GetICNObject( ( *it ).object );
 
         if ( ICN::UNKNOWN != icn && ICN::MINIHERO != icn && ICN::MONS32 != icn && ( !isPuzzleDraw || !MP2::isHiddenForPuzzle( it->object, index ) ) ) {
@@ -1421,7 +1423,7 @@ void Maps::Tiles::RedrawTop( fheroes2::Image & dst, const fheroes2::Rect & visib
         area.BlitOnTile( dst, fheroes2::AGG::GetICN( ICN::OBJNHAUN, Game::MapsAnimationFrame() % 15 ), mp );
     }
     else if ( objectType == MP2::OBJ_MINES ) {
-        const uint8_t spellID = quantity3;
+        const int32_t spellID = Maps::getSpellIdFromTile( *this );
         if ( spellID == Spell::HAUNT ) {
             area.BlitOnTile( dst, fheroes2::AGG::GetICN( ICN::OBJNHAUN, Game::MapsAnimationFrame() % 15 ), mp );
         }
@@ -1473,53 +1475,55 @@ void Maps::Tiles::RedrawTop4Hero( fheroes2::Image & dst, const fheroes2::Rect & 
     }
 }
 
-Maps::TilesAddon * Maps::Tiles::FindAddonLevel1( u32 uniq1 )
+Maps::TilesAddon * Maps::Tiles::FindAddonLevel1( uint32_t uniq1 )
 {
     Addons::iterator it = std::find_if( addons_level1.begin(), addons_level1.end(), [uniq1]( const TilesAddon & v ) { return v.isUniq( uniq1 ); } );
 
     return it != addons_level1.end() ? &( *it ) : nullptr;
 }
 
-Maps::TilesAddon * Maps::Tiles::FindAddonLevel2( u32 uniq2 )
+Maps::TilesAddon * Maps::Tiles::FindAddonLevel2( uint32_t uniq2 )
 {
     Addons::iterator it = std::find_if( addons_level2.begin(), addons_level2.end(), [uniq2]( const TilesAddon & v ) { return v.isUniq( uniq2 ); } );
 
     return it != addons_level2.end() ? &( *it ) : nullptr;
 }
 
-std::string Maps::Tiles::String( void ) const
+std::string Maps::Tiles::String() const
 {
     std::ostringstream os;
 
-    os << "----------------:>>>>>>>>" << std::endl
+    const MP2::MapObjectType objectType = GetObject();
+
+    os << "******* Tile info *******" << std::endl
        << "Tile index      : " << _index << ", "
        << "point: (" << GetCenter().x << ", " << GetCenter().y << ")" << std::endl
-       << "uniq            : " << uniq << std::endl
-       << "mp2 object      : " << static_cast<int>( GetObject() ) << ", (" << MP2::StringObject( GetObject() ) << ")" << std::endl
-       << "tileset         : " << static_cast<int>( objectTileset ) << ", (" << ICN::GetString( MP2::GetICNObject( objectTileset ) ) << ")" << std::endl
-       << "object index    : " << static_cast<int>( objectIndex ) << ", (animated: " << hasSpriteAnimation() << ")" << std::endl
+       << "UID             : " << uniq << std::endl
+       << "MP2 object type : " << static_cast<int>( objectType ) << " (" << MP2::StringObject( objectType ) << ")" << std::endl
+       << "tileset         : " << static_cast<int>( objectTileset ) << " (" << ICN::GetString( MP2::GetICNObject( objectTileset ) ) << ")" << std::endl
+       << "object index    : " << static_cast<int>( objectIndex ) << " (animated: " << hasSpriteAnimation() << ")" << std::endl
        << "level           : " << static_cast<int>( _level ) << std::endl
        << "region          : " << _region << std::endl
-       << "ground          : " << Ground::String( GetGround() ) << ", (isRoad: " << tileIsRoad << ")" << std::endl
-       << "shadow          : " << isShadowSprite( objectTileset, objectIndex ) << std::endl
-       << "passable        : " << ( tilePassable ? Direction::String( tilePassable ) : "false" );
+       << "ground          : " << Ground::String( GetGround() ) << " (isRoad: " << tileIsRoad << ")" << std::endl
+       << "shadow          : " << ( isShadowSprite( objectTileset, objectIndex ) ? "true" : "false" ) << std::endl
+       << "passable from   : " << ( tilePassable ? Direction::String( tilePassable ) : "nowhere" );
 
     os << std::endl
        << "quantity 1      : " << static_cast<int>( quantity1 ) << std::endl
        << "quantity 2      : " << static_cast<int>( quantity2 ) << std::endl
-       << "quantity 3      : " << static_cast<int>( quantity3 ) << std::endl;
+       << "add. metadata   : " << additionalMetadata << std::endl;
 
-    for ( Addons::const_iterator it = addons_level1.begin(); it != addons_level1.end(); ++it )
-        os << ( *it ).String( 1 );
+    for ( const TilesAddon & addon : addons_level1 ) {
+        os << addon.String( 1 );
+    }
 
-    for ( Addons::const_iterator it = addons_level2.begin(); it != addons_level2.end(); ++it )
-        os << ( *it ).String( 2 );
+    for ( const TilesAddon & addon : addons_level2 ) {
+        os << addon.String( 2 );
+    }
 
-    os << "----------------I--------" << std::endl;
+    os << "--- Extra information ---" << std::endl;
 
-    // extra obj info
-    switch ( GetObject() ) {
-        // dwelling
+    switch ( objectType ) {
     case MP2::OBJ_RUINS:
     case MP2::OBJ_TREECITY:
     case MP2::OBJ_WAGONCAMP:
@@ -1538,16 +1542,14 @@ std::string Maps::Tiles::String( void ) const
     case MP2::OBJ_PEASANTHUT:
     case MP2::OBJ_THATCHEDHUT:
     case MP2::OBJ_MONSTER:
-        os << "count           : " << MonsterCount() << std::endl;
+        os << "monster count   : " << MonsterCount() << std::endl;
         break;
-
     case MP2::OBJ_HEROES: {
         const Heroes * hero = GetHeroes();
         if ( hero )
             os << hero->String();
         break;
     }
-
     case MP2::OBJN_CASTLE:
     case MP2::OBJ_CASTLE: {
         const Castle * castle = world.getCastle( GetCenter() );
@@ -1555,13 +1557,13 @@ std::string Maps::Tiles::String( void ) const
             os << castle->String();
         break;
     }
-
     default: {
         const MapsIndexes & v = Maps::getMonstersProtectingTile( _index );
         if ( !v.empty() ) {
             os << "protection      : ";
-            for ( MapsIndexes::const_iterator it = v.begin(); it != v.end(); ++it )
-                os << *it << ", ";
+            for ( const int32_t index : v ) {
+                os << index << ", ";
+            }
             os << std::endl;
         }
         break;
@@ -1577,11 +1579,12 @@ std::string Maps::Tiles::String( void ) const
         }
     }
 
-    os << "----------------:<<<<<<<<" << std::endl;
+    os << "*************************" << std::endl;
+
     return os.str();
 }
 
-void Maps::Tiles::FixObject( void )
+void Maps::Tiles::FixObject()
 {
     if ( MP2::OBJ_ZERO == mp2_object ) {
         if ( std::any_of( addons_level1.begin(), addons_level1.end(), TilesAddon::isArtifact ) )
@@ -1651,7 +1654,7 @@ bool Maps::Tiles::isRoad() const
     return tileIsRoad || mp2_object == MP2::OBJ_CASTLE;
 }
 
-bool Maps::Tiles::isStream( void ) const
+bool Maps::Tiles::isStream() const
 {
     for ( auto it = addons_level1.begin(); it != addons_level1.end(); ++it ) {
         const int icn = MP2::GetICNObject( it->object );
@@ -1688,7 +1691,7 @@ uint8_t Maps::Tiles::GetObjectSpriteIndex() const
     return objectIndex;
 }
 
-Maps::TilesAddon * Maps::Tiles::FindFlags( void )
+Maps::TilesAddon * Maps::Tiles::FindFlags()
 {
     Addons::iterator it = std::find_if( addons_level1.begin(), addons_level1.end(), TilesAddon::isFlag32 );
 
@@ -1857,6 +1860,50 @@ void Maps::Tiles::fixTileObjectType( Tiles & tile )
         return;
     }
 
+    // On some maps (apparently created by some non-standard editor), the object type on tiles with random monsters does not match the index
+    // of the monster placeholder sprite. While this engine looks at the object type when placing an actual monster on a tile, the original
+    // HoMM2 apparently looks at the placeholder sprite, so we need to keep them in sync.
+    if ( originalICN == ICN::MONS32 ) {
+        MP2::MapObjectType monsterObjectType = originalObjectType;
+
+        const uint8_t originalObjectSpriteIndex = tile.GetObjectSpriteIndex();
+        switch ( originalObjectSpriteIndex ) {
+        // Random monster placeholder "MON"
+        case 66:
+            monsterObjectType = MP2::OBJ_RNDMONSTER;
+            break;
+        // Random monster placeholder "MON 1"
+        case 67:
+            monsterObjectType = MP2::OBJ_RNDMONSTER1;
+            break;
+        // Random monster placeholder "MON 2"
+        case 68:
+            monsterObjectType = MP2::OBJ_RNDMONSTER2;
+            break;
+        // Random monster placeholder "MON 3"
+        case 69:
+            monsterObjectType = MP2::OBJ_RNDMONSTER3;
+            break;
+        // Random monster placeholder "MON 4"
+        case 70:
+            monsterObjectType = MP2::OBJ_RNDMONSTER4;
+            break;
+        default:
+            break;
+        }
+
+        if ( monsterObjectType != originalObjectType ) {
+            tile.SetObject( monsterObjectType );
+
+            DEBUG_LOG( DBG_GAME, DBG_WARN,
+                       "Invalid object type index " << tile._index << ": type " << MP2::StringObject( originalObjectType ) << ", object sprite index "
+                                                    << static_cast<int>( originalObjectSpriteIndex ) << ", corrected type " << MP2::StringObject( monsterObjectType ) )
+
+            // There is no need to check the rest of things as we fixed this object.
+            return;
+        }
+    }
+
     // Fix The Price of Loyalty objects even if the map is The Succession Wars type.
     switch ( originalObjectType ) {
     case MP2::OBJ_UNKNW_79:
@@ -1920,7 +1967,7 @@ bool Maps::Tiles::isCaptureObjectProtected() const
     return false;
 }
 
-void Maps::Tiles::Remove( u32 uniqID )
+void Maps::Tiles::Remove( uint32_t uniqID )
 {
     if ( !addons_level1.empty() )
         addons_level1.Remove( uniqID );
@@ -1975,7 +2022,7 @@ void Maps::Tiles::UpdateObjectSprite( uint32_t uniqID, uint8_t rawTileset, uint8
     }
 }
 
-void Maps::Tiles::RemoveObjectSprite( void )
+void Maps::Tiles::RemoveObjectSprite()
 {
     switch ( GetObject() ) {
     case MP2::OBJ_MONSTER:
@@ -2015,11 +2062,11 @@ void Maps::Tiles::RemoveObjectSprite( void )
     }
 }
 
-void Maps::Tiles::RemoveJailSprite( void )
+void Maps::Tiles::RemoveJailSprite()
 {
     // remove left sprite
     if ( Maps::isValidDirection( _index, Direction::LEFT ) ) {
-        const s32 left = Maps::GetDirectionIndex( _index, Direction::LEFT );
+        const int32_t left = Maps::GetDirectionIndex( _index, Direction::LEFT );
         world.GetTiles( left ).Remove( uniq );
 
         // remove left left sprite
@@ -2029,7 +2076,7 @@ void Maps::Tiles::RemoveJailSprite( void )
 
     // remove top sprite
     if ( Maps::isValidDirection( _index, Direction::TOP ) ) {
-        const s32 top = Maps::GetDirectionIndex( _index, Direction::TOP );
+        const int32_t top = Maps::GetDirectionIndex( _index, Direction::TOP );
         Maps::Tiles & topTile = world.GetTiles( top );
         topTile.Remove( uniq );
 
@@ -2266,7 +2313,7 @@ void Maps::Tiles::RedrawFogs( fheroes2::Image & dst, int color, const Interface:
         area.DrawTile( dst, sf, mp );
     }
     else {
-        u32 index = 0;
+        uint32_t index = 0;
         bool revert = false;
 
         if ( ( around & Direction::CENTER ) && !( around & ( Direction::TOP | Direction::BOTTOM | Direction::LEFT | Direction::RIGHT ) ) ) {
@@ -2570,6 +2617,29 @@ bool Maps::Tiles::containsTileSet( const std::vector<uint8_t> & tileSets ) const
     return false;
 }
 
+bool Maps::Tiles::containsSprite( uint8_t tileSetId, const uint32_t objectIdx ) const
+{
+    tileSetId = tileSetId >> 2;
+
+    if ( ( objectTileset >> 2 ) == tileSetId && objectIdx == objectIndex ) {
+        return true;
+    }
+
+    for ( const TilesAddon & addon : addons_level1 ) {
+        if ( ( addon.object >> 2 ) == tileSetId && objectIdx == objectIndex ) {
+            return true;
+        }
+    }
+
+    for ( const TilesAddon & addon : addons_level2 ) {
+        if ( ( addon.object >> 2 ) == tileSetId && objectIdx == objectIndex ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool Maps::Tiles::isTallObject() const
 {
     // TODO: possibly cache the output of the method as right now it's in average twice.
@@ -2670,7 +2740,7 @@ int32_t Maps::Tiles::getIndexOfMainTile( const Maps::Tiles & tile )
     }
 
     // Most likely we have a broken object put by an editor.
-    DEBUG_LOG( DBG_GAME, DBG_WARN, "Tile " << tileIndex << " of type " << MP2::StringObject( objectType ) << " has no parent tile." )
+    DEBUG_LOG( DBG_GAME, DBG_TRACE, "Tile " << tileIndex << " of type " << MP2::StringObject( objectType ) << " has no parent tile." )
     return -1;
 }
 
@@ -2722,8 +2792,8 @@ StreamBase & Maps::operator<<( StreamBase & msg, const Tiles & tile )
     static_assert( sizeof( uint8_t ) == sizeof( MP2::MapObjectType ), "Incorrect type for writing MP2::MapObjectType object" );
 
     return msg << tile._index << tile.pack_sprite_index << tile.tilePassable << tile.uniq << tile.objectTileset << tile.objectIndex
-               << static_cast<uint8_t>( tile.mp2_object ) << tile.fog_colors << tile.quantity1 << tile.quantity2 << tile.quantity3 << tile.heroID << tile.tileIsRoad
-               << tile.addons_level1 << tile.addons_level2 << tile._level;
+               << static_cast<uint8_t>( tile.mp2_object ) << tile.fog_colors << tile.quantity1 << tile.quantity2 << tile.additionalMetadata << tile.heroID
+               << tile.tileIsRoad << tile.addons_level1 << tile.addons_level2 << tile._level;
 }
 
 StreamBase & Maps::operator>>( StreamBase & msg, Tiles & tile )
@@ -2735,8 +2805,20 @@ StreamBase & Maps::operator>>( StreamBase & msg, Tiles & tile )
     msg >> objectType;
     tile.mp2_object = static_cast<MP2::MapObjectType>( objectType );
 
-    msg >> tile.fog_colors >> tile.quantity1 >> tile.quantity2 >> tile.quantity3 >> tile.heroID >> tile.tileIsRoad >> tile.addons_level1 >> tile.addons_level2
-        >> tile._level;
+    msg >> tile.fog_colors >> tile.quantity1 >> tile.quantity2;
+
+    static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_0918_RELEASE, "Remove the check below." );
+    if ( Game::GetLoadVersion() < FORMAT_VERSION_0918_RELEASE ) {
+        // Old additional metadata was stored in uint8_t format.
+        uint8_t temp;
+        msg >> temp;
+        tile.additionalMetadata = temp;
+    }
+    else {
+        msg >> tile.additionalMetadata;
+    }
+
+    msg >> tile.heroID >> tile.tileIsRoad >> tile.addons_level1 >> tile.addons_level2 >> tile._level;
 
     return msg;
 }

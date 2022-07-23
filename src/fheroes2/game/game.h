@@ -24,13 +24,12 @@
 #ifndef H2GAME_H
 #define H2GAME_H
 
+#include <cstdint>
 #include <string>
 
-#include "agg.h"
 #include "game_mode.h"
 #include "mp2.h"
 #include "mus.h"
-#include "types.h"
 
 class Players;
 class Heroes;
@@ -38,9 +37,9 @@ class Castle;
 
 namespace Game
 {
-    void Init( void );
+    void Init();
 
-    const std::string & GetLastSavename( void );
+    const std::string & GetLastSavename();
     void SetLastSavename( const std::string & );
     void SetLoadVersion( uint16_t ver );
     uint16_t GetLoadVersion();
@@ -93,20 +92,20 @@ namespace Game
 
     void EnvironmentSoundMixer();
     void restoreSoundsForCurrentFocus();
-    int GetKingdomColors( void );
-    int GetActualKingdomColors( void );
-    void DialogPlayers( int color, std::string );
-    void SetCurrentMusic( const int mus );
-    int CurrentMusic();
-    u32 & MapsAnimationFrame( void );
-    u32 GetRating( void );
-    u32 GetGameOverScores( void );
-    u32 GetLostTownDays( void );
-    u32 GetWhirlpoolPercent( void );
-    u32 SelectCountPlayers( void );
-    void PlayPickupSound( void );
+
     bool UpdateSoundsOnFocusUpdate();
-    void SetUpdateSoundsOnFocusUpdate( bool update );
+    void SetUpdateSoundsOnFocusUpdate( const bool update );
+
+    int GetKingdomColors();
+    int GetActualKingdomColors();
+    void DialogPlayers( int color, std::string );
+    uint32_t & MapsAnimationFrame();
+    uint32_t GetRating();
+    uint32_t GetGameOverScores();
+    uint32_t GetLostTownDays();
+    uint32_t GetWhirlpoolPercent();
+    uint32_t SelectCountPlayers();
+    void PlayPickupSound();
     void OpenHeroesDialog( Heroes & hero, bool updateFocus, bool windowIsGameWorld, bool disableDismiss = false );
     void OpenCastleDialog( Castle & castle, bool updateFocus = true );
     // Returns the difficulty level based on the type of game.
@@ -119,40 +118,6 @@ namespace Game
     std::string GetSaveFileBaseName();
     std::string GetSaveFileExtension();
     std::string GetSaveFileExtension( const int gameType );
-
-    // Useful for restoring background music after playing short-term music effects
-    class MusicRestorer
-    {
-    public:
-        MusicRestorer()
-            : _music( CurrentMusic() )
-        {}
-
-        MusicRestorer( const MusicRestorer & ) = delete;
-
-        ~MusicRestorer()
-        {
-            if ( _music == MUS::UNUSED || _music == MUS::UNKNOWN ) {
-                SetCurrentMusic( _music );
-
-                return;
-            }
-
-            // Set current music to MUS::UNKNOWN to prevent attempts to play the old music
-            // by new instances of MusicRestorer while the music being currently restored
-            // is starting in the background
-            if ( _music != CurrentMusic() ) {
-                SetCurrentMusic( MUS::UNKNOWN );
-            }
-
-            AGG::PlayMusic( _music, true, true );
-        }
-
-        MusicRestorer & operator=( const MusicRestorer & ) = delete;
-
-    private:
-        const int _music;
-    };
 
     namespace ObjectFadeAnimation
     {
@@ -181,8 +146,11 @@ namespace Game
     }
 
     int32_t GetStep4Player( const int32_t currentId, const int32_t width, const int32_t totalCount );
-    std::string CountScoute( uint32_t count, int scoute, bool shorts = false );
     std::string CountThievesGuild( uint32_t monsterCount, int guildCount );
+
+    // Returns the string representation of the monster count, formatted according to the scouting level (possibly in
+    // abbreviated form), suitable for use with the WORLD_SCOUTING_EXTENDED option. See the implementation for details.
+    std::string formatMonsterCount( const uint32_t count, const int scoutingLevel, const bool abbreviateNumber = false );
 }
 
 #endif

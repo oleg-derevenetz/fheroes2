@@ -25,7 +25,7 @@ file(STRINGS ${CMAKE_SOURCE_DIR}/version.txt FHEROES2_VERSION LIMIT_COUNT 1 REGE
 
 project(fheroes2 VERSION ${FHEROES2_VERSION} LANGUAGES C CXX)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 include(CMakeDependentOption)
 include(GNUInstallDirs)
@@ -77,23 +77,11 @@ add_subdirectory(src)
 #
 if(NOT WIN32)
 	find_program(MAKE_EXECUTABLE make)
-	find_program(SED_EXECUTABLE sed)
-	find_program(XGETTEXT_EXECUTABLE xgettext)
 
-	file(GLOB_RECURSE ALL_SOURCES CONFIGURE_DEPENDS src/*.cpp)
-
-	add_custom_target(
-		${PROJECT_NAME}.pot
-		COMMAND ${XGETTEXT_EXECUTABLE} -d ${PROJECT_NAME} -C -F -k_ -k_n:1,2 -o ${PROJECT_NAME}.pot ${ALL_SOURCES}
-		COMMAND ${SED_EXECUTABLE} -i~ -e "s/, c-format//" ${PROJECT_NAME}.pot
-		DEPENDS fheroes2
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/dist
-		)
 	add_custom_target(
 		translations
 		ALL
 		COMMAND ${MAKE_EXECUTABLE}
-		DEPENDS ${PROJECT_NAME}.pot
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/files/lang
 		)
 endif(NOT WIN32)

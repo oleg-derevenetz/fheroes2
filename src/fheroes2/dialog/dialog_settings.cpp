@@ -37,20 +37,20 @@
 #include "ui_button.h"
 #include "ui_window.h"
 
-class SettingsListBox : public Interface::ListBox<u32>
+class SettingsListBox : public Interface::ListBox<uint32_t>
 {
 public:
-    using Interface::ListBox<u32>::ActionListDoubleClick;
-    using Interface::ListBox<u32>::ActionListSingleClick;
-    using Interface::ListBox<u32>::ActionListPressRight;
+    using Interface::ListBox<uint32_t>::ActionListDoubleClick;
+    using Interface::ListBox<uint32_t>::ActionListSingleClick;
+    using Interface::ListBox<uint32_t>::ActionListPressRight;
 
     SettingsListBox( const fheroes2::Point & pt, bool f )
-        : Interface::ListBox<u32>( pt )
+        : Interface::ListBox<uint32_t>( pt )
         , readonly( f )
         , _restorer( fheroes2::Display::instance() )
     {}
 
-    void RedrawItem( const u32 &, s32, s32, bool ) override;
+    void RedrawItem( const uint32_t & item, int32_t ox, int32_t oy, bool current ) override;
     void RedrawBackground( const fheroes2::Point & ) override;
 
     void ActionCurrentUp() override
@@ -63,11 +63,11 @@ public:
         // Do nothing.
     }
 
-    void ActionListDoubleClick( u32 & ) override;
+    void ActionListDoubleClick( uint32_t & item ) override;
 
-    void ActionListSingleClick( u32 & ) override;
+    void ActionListSingleClick( uint32_t & item ) override;
 
-    void ActionListPressRight( u32 & ) override
+    void ActionListPressRight( uint32_t & /* unused */ ) override
     {
         // Do nothing.
     }
@@ -76,7 +76,7 @@ public:
     fheroes2::ImageRestorer _restorer;
 };
 
-void SettingsListBox::RedrawItem( const u32 & item, s32 ox, s32 oy, bool /*current*/ )
+void SettingsListBox::RedrawItem( const uint32_t & item, int32_t ox, int32_t oy, bool /*current*/ )
 {
     fheroes2::Display & display = fheroes2::Display::instance();
     const Settings & conf = Settings::Get();
@@ -118,12 +118,12 @@ void SettingsListBox::RedrawBackground( const fheroes2::Point & origin )
     fheroes2::Blit( sprite, 0, sprite.height() - scrollbarHeight / 2, display, origin.x + 295, origin.y + 41 + scrollbarHeight / 2, 16, scrollbarHeight / 2 );
 }
 
-void SettingsListBox::ActionListDoubleClick( u32 & item )
+void SettingsListBox::ActionListDoubleClick( uint32_t & item )
 {
     ActionListSingleClick( item );
 }
 
-void SettingsListBox::ActionListSingleClick( u32 & item )
+void SettingsListBox::ActionListSingleClick( uint32_t & item )
 {
     Settings & conf = Settings::Get();
 
@@ -143,10 +143,9 @@ void Dialog::ExtSettings( bool readonly )
     Text text( _( "Experimental Game Settings" ), Font::YELLOW_BIG );
     text.Blit( area.x + ( area.width - text.w() ) / 2, area.y + 6 );
 
-    std::vector<u32> states;
+    std::vector<uint32_t> states;
     states.reserve( 32 );
 
-    states.push_back( Settings::GAME_SAVE_REWRITE_CONFIRM );
     states.push_back( Settings::GAME_REMEMBER_LAST_FOCUS );
     states.push_back( Settings::GAME_SHOW_SYSTEM_INFO );
     states.push_back( Settings::GAME_BATTLE_SHOW_DAMAGE );
@@ -176,10 +175,9 @@ void Dialog::ExtSettings( bool readonly )
     listbox.SetScrollButtonUp( ICN::ESCROLL, 4, 5, { area.x + 295, area.y + 25 } );
     listbox.SetScrollButtonDn( ICN::ESCROLL, 6, 7, { area.x + 295, area.y + ah + 5 } );
 
-    const fheroes2::Sprite & originalSilder = fheroes2::AGG::GetICN( ICN::ESCROLL, 3 );
-    const fheroes2::Image scrollbarSlider
-        = fheroes2::generateScrollbarSlider( originalSilder, false, ah - 42, ah / 40, static_cast<int32_t>( states.size() ), { 0, 0, originalSilder.width(), 8 },
-                                             { 0, 7, originalSilder.width(), 8 } );
+    const fheroes2::Sprite & originalSlider = fheroes2::AGG::GetICN( ICN::ESCROLL, 3 );
+    const fheroes2::Image scrollbarSlider = fheroes2::generateScrollbarSlider( originalSlider, false, ah - 42, ah / 40, static_cast<int32_t>( states.size() ),
+                                                                               { 0, 0, originalSlider.width(), 8 }, { 0, 7, originalSlider.width(), 8 } );
 
     listbox.setScrollBarArea( { area.x + 298, area.y + 44, 10, ah - 42 } );
     listbox.setScrollBarImage( scrollbarSlider );

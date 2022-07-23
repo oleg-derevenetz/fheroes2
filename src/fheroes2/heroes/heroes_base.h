@@ -59,6 +59,8 @@ public:
     HeroBase( const int type, const int race );
     HeroBase();
 
+    ~HeroBase() override = default;
+
     enum
     {
         UNDEFINED,
@@ -74,10 +76,10 @@ public:
     virtual const Army & GetArmy() const = 0;
     virtual Army & GetArmy() = 0;
 
-    virtual u32 GetMaxSpellPoints() const = 0;
+    virtual uint32_t GetMaxSpellPoints() const = 0;
 
     virtual int GetLevelSkill( int skill ) const = 0;
-    virtual u32 GetSecondaryValues( int skill ) const = 0;
+    virtual uint32_t GetSecondaryValues( int skill ) const = 0;
 
     virtual void ActionAfterBattle() = 0;
     virtual void ActionPreBattle() = 0;
@@ -109,7 +111,8 @@ public:
 
     std::vector<Spell> GetSpells( const int lvl = -1 ) const;
     void EditSpellBook();
-    Spell OpenSpellBook( const SpellBook::Filter filter, const bool canSelect, const std::function<void( const std::string & )> * statusCallback ) const;
+    Spell OpenSpellBook( const SpellBook::Filter filter, const bool canCastSpell, const bool restorePreviousState,
+                         const std::function<void( const std::string & )> * statusCallback ) const;
     bool HaveSpellBook() const;
     bool HaveSpell( const Spell &, const bool skip_bag = false ) const;
     void AppendSpellToBook( const Spell &, const bool without_wisdom = false );

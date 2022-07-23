@@ -21,9 +21,9 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include "agg.h"
 #include "agg_image.h"
 #include "audio.h"
+#include "audio_manager.h"
 #include "cursor.h"
 #include "dialog.h"
 #include "dialog_game_settings.h"
@@ -50,7 +50,7 @@ namespace
 {
     struct ButtonInfo
     {
-        u32 frame;
+        uint32_t frame;
         fheroes2::Button & button;
         bool isOver;
         bool wasOver;
@@ -168,9 +168,9 @@ void Game::mainGameLoop( bool isFirstGameRun )
 fheroes2::GameMode Game::MainMenu( bool isFirstGameRun )
 {
     // Stop all sounds, but not the music
-    Mixer::Stop();
+    AudioManager::stopSounds();
 
-    AGG::PlayMusic( MUS::MAINMENU, true, true );
+    AudioManager::PlayMusicAsync( MUS::MAINMENU, Music::PlaybackMode::RESUME_AND_PLAY_INFINITE );
 
     Settings & conf = Settings::Get();
 
@@ -239,7 +239,7 @@ fheroes2::GameMode Game::MainMenu( bool isFirstGameRun )
     const fheroes2::Rect settingsArea( static_cast<int32_t>( 63 * scaleX ), static_cast<int32_t>( 202 * scaleY ), static_cast<int32_t>( 90 * scaleX ),
                                        static_cast<int32_t>( 160 * scaleY ) );
 
-    u32 lantern_frame = 0;
+    uint32_t lantern_frame = 0;
 
     std::vector<ButtonInfo> buttons{ { NEWGAME_DEFAULT, buttonNewGame, false, false },
                                      { LOADGAME_DEFAULT, buttonLoadGame, false, false },
@@ -259,8 +259,6 @@ fheroes2::GameMode Game::MainMenu( bool isFirstGameRun )
     while ( true ) {
         if ( !le.HandleEvents( true, true ) ) {
             if ( Interface::Basic::EventExit() == fheroes2::GameMode::QUIT_GAME ) {
-                // if ( Settings::ExtGameUseFade() )
-                //    display.Fade();
                 break;
             }
             else {
@@ -283,7 +281,7 @@ fheroes2::GameMode Game::MainMenu( bool isFirstGameRun )
             buttons[i].isOver = le.MouseCursor( buttons[i].button.area() );
 
             if ( buttons[i].isOver != buttons[i].wasOver ) {
-                u32 frame = buttons[i].frame;
+                uint32_t frame = buttons[i].frame;
 
                 if ( buttons[i].isOver && !buttons[i].wasOver )
                     ++frame;
@@ -318,16 +316,12 @@ fheroes2::GameMode Game::MainMenu( bool isFirstGameRun )
 
         if ( HotKeyPressEvent( HotKeyEvent::DEFAULT_CANCEL ) || le.MouseClickLeft( buttonQuit.area() ) ) {
             if ( Interface::Basic::EventExit() == fheroes2::GameMode::QUIT_GAME ) {
-                // if ( Settings::ExtGameUseFade() )
-                //     display.Fade();
                 return fheroes2::GameMode::QUIT_GAME;
             }
         }
         else if ( HotKeyPressEvent( HotKeyEvent::MAIN_MENU_SETTINGS ) || le.MouseClickLeft( settingsArea ) ) {
             fheroes2::openGameSettings();
 
-            // force interface to reset area and positions
-            Interface::Basic::Get().Reset();
             return fheroes2::GameMode::MAIN_MENU;
         }
 

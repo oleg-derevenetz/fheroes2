@@ -456,7 +456,7 @@ void Interface::BorderWindow::SetPosition( int32_t px, int32_t py )
     }
 }
 
-bool Interface::BorderWindow::QueueEventProcessing( void )
+bool Interface::BorderWindow::QueueEventProcessing()
 {
     const Settings & conf = Settings::Get();
     LocalEvent & le = LocalEvent::Get();
@@ -486,7 +486,6 @@ bool Interface::BorderWindow::QueueEventProcessing( void )
         }
 
         SetPos( mp.x - ox, mp.y - oy );
-        Interface::Basic::Get().SetRedraw( REDRAW_GAMEAREA );
 
         return true;
     }

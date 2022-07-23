@@ -46,7 +46,7 @@ namespace fheroes2
             // Do nothing.
         }
 
-        HighscoreData( HighscoreData & ) = default;
+        HighscoreData( const HighscoreData & ) = default;
         HighscoreData( HighscoreData && ) = default;
 
         ~HighscoreData() = default;
@@ -84,8 +84,8 @@ namespace fheroes2
         bool load( const std::string & fileName );
         bool save( const std::string & fileName ) const;
 
-        void registerScoreStandard( HighscoreData && data );
-        void registerScoreCampaign( HighscoreData && data );
+        int32_t registerScoreStandard( HighscoreData && data );
+        int32_t registerScoreCampaign( HighscoreData && data );
 
         void populateStandardDefaultHighScores();
 

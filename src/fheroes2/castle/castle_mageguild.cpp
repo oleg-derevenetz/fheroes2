@@ -32,6 +32,7 @@
 #include "icn.h"
 #include "mageguild.h"
 #include "race.h"
+#include "settings.h"
 #include "text.h"
 #include "tools.h"
 #include "translations.h"
@@ -46,8 +47,8 @@ namespace
     {
     public:
         RowSpells( const fheroes2::Point & pos, const Castle & castle, const int lvl );
-        void Redraw( void );
-        bool QueueEventProcessing( void );
+        void Redraw();
+        bool QueueEventProcessing();
 
     private:
         std::vector<fheroes2::Rect> coords;
@@ -95,7 +96,7 @@ RowSpells::RowSpells( const fheroes2::Point & pos, const Castle & castle, const 
     spells.resize( coords.size(), Spell::NONE );
 }
 
-void RowSpells::Redraw( void )
+void RowSpells::Redraw()
 {
     fheroes2::Display & display = fheroes2::Display::instance();
     const fheroes2::Sprite & roll_show = fheroes2::AGG::GetICN( ICN::TOWNWIND, 0 );
@@ -122,11 +123,11 @@ void RowSpells::Redraw( void )
     }
 }
 
-bool RowSpells::QueueEventProcessing( void )
+bool RowSpells::QueueEventProcessing()
 {
     LocalEvent & le = LocalEvent::Get();
 
-    const s32 index = GetRectIndex( coords, le.GetMouseCursor() );
+    const int32_t index = GetRectIndex( coords, le.GetMouseCursor() );
 
     if ( 0 <= index && ( le.MouseClickLeft() || le.MousePressRight() ) ) {
         const Spell & spell = spells[index];
@@ -154,7 +155,9 @@ void Castle::OpenMageGuild( const CastleHeroes & heroes ) const
     const fheroes2::Point cur_pt( restorer.x(), restorer.y() );
     fheroes2::Point dst_pt( cur_pt.x, cur_pt.y );
 
-    fheroes2::Blit( fheroes2::AGG::GetICN( ICN::STONEBAK, 0 ), display, cur_pt.x, cur_pt.y );
+    const bool isEvilInterface = Settings::Get().ExtGameEvilInterface();
+
+    fheroes2::Blit( fheroes2::AGG::GetICN( isEvilInterface ? ICN::STONEBAK_EVIL : ICN::STONEBAK, 0 ), display, cur_pt.x, cur_pt.y );
 
     // The original ICN::WELLEXTRA image does not have a yellow outer frame.
     const int32_t allowedBottomBarWidth = exitButtonOffsetX;

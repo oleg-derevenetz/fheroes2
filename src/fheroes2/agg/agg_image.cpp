@@ -32,6 +32,7 @@
 #include "image.h"
 #include "image_tool.h"
 #include "pal.h"
+#include "rand.h"
 #include "screen.h"
 #include "text.h"
 #include "til.h"
@@ -45,7 +46,7 @@ namespace
     const std::array<const char *, TIL::LASTTIL> tilFileName = { "UNKNOWN", "CLOF32.TIL", "GROUND32.TIL", "STON.TIL" };
 
     std::vector<std::vector<fheroes2::Sprite>> _icnVsSprite( ICN::LASTICN );
-    std::vector<std::vector<std::vector<fheroes2::Image>>> _tilVsImage( TIL::LASTTIL );
+    std::array<std::vector<std::vector<fheroes2::Image>>, TIL::LASTTIL> _tilVsImage;
     const fheroes2::Sprite errorImage;
 
     const uint32_t headerSize = 6;
@@ -103,10 +104,23 @@ namespace
         }
     }
 
+    void fillRandomPixelsFromImage( const fheroes2::Image & original, const fheroes2::Rect & originalRoi, fheroes2::Image & output, const fheroes2::Rect & outputRoi,
+                                    std::mt19937 & seededGen )
+    {
+        for ( int x = outputRoi.x; x < outputRoi.x + outputRoi.width; ++x ) {
+            for ( int y = outputRoi.y; y < outputRoi.y + outputRoi.height; ++y ) {
+                const fheroes2::Point pixelLocation{ static_cast<int32_t>( Rand::GetWithGen( originalRoi.x, originalRoi.x + originalRoi.width - 1, seededGen ) ),
+                                                     static_cast<int32_t>( Rand::GetWithGen( originalRoi.y, originalRoi.y + originalRoi.height - 1, seededGen ) ) };
+
+                fheroes2::Copy( original, pixelLocation.x, pixelLocation.y, output, x, y, 1, 1 );
+            }
+        }
+    }
+
     // BMP files within AGG are not Bitmap files.
     fheroes2::Sprite loadBMPFile( const std::string & path )
     {
-        const std::vector<uint8_t> & data = AGG::ReadChunk( path );
+        const std::vector<uint8_t> & data = AGG::getDataFromAggFile( path );
         if ( data.size() < 6 ) {
             // It is an invalid BMP file.
             return {};
@@ -223,6 +237,38 @@ namespace
         }
         return isReleasedState ? fheroes2::GetColorId( 180, 180, 180 ) : fheroes2::GetColorId( 144, 144, 144 );
     }
+
+    void convertToEvilInterface( fheroes2::Sprite & image, const fheroes2::Rect & roi )
+    {
+        fheroes2::ApplyPalette( image, roi.x, roi.y, image, roi.x, roi.y, roi.width, roi.height, PAL::GetPalette( PAL::PaletteType::GOOD_TO_EVIL_INTERFACE ) );
+    }
+
+    void copyEvilInterfaceElements( fheroes2::Sprite & image, const fheroes2::Rect & roi )
+    {
+        // Evil interface has special elements at each corner of the window.
+        const fheroes2::Sprite & original = fheroes2::AGG::GetICN( ICN::CSPANBKE, 0 );
+
+        // If this assertion blows up you are using some modded resources. Good luck!
+        assert( original.width() == 321 && original.height() == 304 );
+
+        // Top-left corner.
+        fheroes2::Copy( original, 0, 0, image, roi.x, roi.y, 17, 43 );
+        fheroes2::Copy( original, 17, 0, image, roi.x + 17, roi.y, 26, 14 );
+
+        // Top-right corner.
+        fheroes2::Copy( original, original.width() - 43, 0, image, roi.x + roi.width - 43, roi.y, 43, 14 );
+        fheroes2::Copy( original, original.width() - 17, 14, image, roi.x + roi.width - 17, roi.y + 14, 17, 29 );
+
+        // Bottom-right corner.
+        fheroes2::Copy( original, original.width() - 13, original.height() - 43, image, roi.x + roi.width - 13, roi.y + roi.height - 43, 13, 27 );
+        fheroes2::Copy( original, original.width() - 16, original.height() - 16, image, roi.x + roi.width - 16, roi.y + roi.height - 16, 16, 16 );
+        fheroes2::Copy( original, original.width() - 43, original.height() - 13, image, roi.x + roi.width - 43, roi.y + roi.height - 13, 27, 13 );
+
+        // Bottom-left corner.
+        fheroes2::Copy( original, 0, original.height() - 43, image, roi.x, roi.y + roi.height - 43, 13, 27 );
+        fheroes2::Copy( original, 0, original.height() - 16, image, roi.x, roi.y + roi.height - 16, 16, 16 );
+        fheroes2::Copy( original, 16, original.height() - 13, image, roi.x + 16, roi.y + roi.height - 13, 27, 13 );
+    }
 }
 
 namespace fheroes2
@@ -231,7 +277,7 @@ namespace fheroes2
     {
         void LoadOriginalICN( int id )
         {
-            const std::vector<uint8_t> & body = ::AGG::ReadChunk( ICN::GetString( id ) );
+            const std::vector<uint8_t> & body = ::AGG::getDataFromAggFile( ICN::GetString( id ) );
 
             if ( body.empty() ) {
                 return;
@@ -758,7 +804,7 @@ namespace fheroes2
 
                 if ( id == ICN::SMALFONT ) {
                     // Small font in official Polish GoG version has all letters to be shifted by 1 pixel lower.
-                    const std::vector<uint8_t> & body = ::AGG::ReadChunk( ICN::GetString( id ) );
+                    const std::vector<uint8_t> & body = ::AGG::getDataFromAggFile( ICN::GetString( id ) );
                     const uint32_t crc32 = fheroes2::calculateCRC32( body.data(), body.size() );
                     if ( crc32 == 0xE9EC7A63 ) {
                         for ( Sprite & letter : imageArray ) {
@@ -1802,18 +1848,27 @@ namespace fheroes2
             }
             case ICN::NGEXTRA: {
                 LoadOriginalICN( id );
-                if ( _icnVsSprite[id].size() >= 34 ) {
+                std::vector<Sprite> & images = _icnVsSprite[id];
+
+                if ( images.size() >= 34 ) {
                     // Fix extra column at the end of AI controlled player.
                     for ( size_t i = 27; i < 34; ++i ) {
-                        if ( _icnVsSprite[id][i].width() == 62 && _icnVsSprite[id][i].height() == 58 ) {
-                            Copy( _icnVsSprite[id][i], 58, 44, _icnVsSprite[id][i], 59, 44, 1, 11 );
+                        if ( images[i].width() == 62 && images[i].height() == 58 ) {
+                            Copy( images[i], 58, 44, images[i], 59, 44, 1, 11 );
+                        }
+                    }
+
+                    for ( size_t i = 39; i < 45; ++i ) {
+                        if ( images[i].width() == 62 && images[i].height() == 58 ) {
+                            Copy( images[i], 58, 44, images[i], 59, 44, 1, 11 );
                         }
                     }
                 }
-                if ( _icnVsSprite[id].size() >= 70 ) {
+
+                if ( images.size() >= 70 ) {
                     // fix transparent corners on pressed OKAY and CANCEL buttons
-                    CopyTransformLayer( _icnVsSprite[id][66], _icnVsSprite[id][67] );
-                    CopyTransformLayer( _icnVsSprite[id][68], _icnVsSprite[id][69] );
+                    CopyTransformLayer( images[66], images[67] );
+                    CopyTransformLayer( images[68], images[69] );
                 }
                 return true;
             }
@@ -1942,8 +1997,224 @@ namespace fheroes2
                     FillTransform( image, 62, 67, 1, windowBottom - 67, 1 );
                     FillTransform( image, 63, 69, 1, windowBottom - 69, 1 );
                     FillTransform( image, 64, 72, 1, windowBottom - 72, 1 );
+
+                    // The lower part of the tower is truncated and blocked by partial castle's sprite. The fix is done in multiple stages.
+                    // Fix right red part of the building by copying a piece of the same wall.
+                    Copy( image, 67, 135, image, 67, 119, 1, 1 );
+                    Copy( image, 67, 144, image, 67, 120, 2, 2 );
+                    Copy( image, 67, 134, image, 67, 122, 3, 2 );
+                    Copy( image, 67, 148, image, 67, 125, 1, 4 );
+
+                    // Remove a part of the castle at the bottom left part of the image.
+                    FillTransform( image, 62, 157, 3, 8, 1 );
+
+                    // Top part of the castle's tower touches Red Tower level separation part.
+                    Copy( image, 61, 101, image, 57, 101, 2, 1 );
+                    Copy( image, 52, 100, image, 57, 100, 2, 1 );
+
+                    // Generate programmatically the left part of the building.
+                    std::mt19937 seededGen( 751 ); // 751 is and ID of this sprite. To keep the changes constant we need to hardcode this value.
+
+                    fillRandomPixelsFromImage( image, { 33, 105, 4, 7 }, image, { 33, 117, 4, 39 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 41, 105, 5, 9 }, image, { 41, 121, 5, 36 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 46, 104, 4, 13 }, image, { 46, 118, 4, 39 }, seededGen );
+
+                    Copy( image, 37, 113, image, 37, 115, 1, 2 );
+                    Copy( image, 37, 104, image, 37, 117, 1, 2 );
+                    Copy( image, 38, 104, image, 38, 118, 2, 1 );
+                    Copy( image, 37, 113, image, 38, 117, 1, 1 );
+
+                    // Create a temporary image to be a holder of pixels.
+                    Sprite temp( 4 * 2, 8 );
+                    Copy( image, 33, 105, temp, 0, 0, 4, 8 );
+                    Copy( image, 41, 105, temp, 4, 0, 4, 8 );
+                    fillRandomPixelsFromImage( temp, { 0, 0, temp.width(), temp.height() }, image, { 37, 119, 4, 37 }, seededGen );
+
+                    Copy( image, 35, 131, image, 35, 113, 2, 4 );
+
+                    Copy( image, 43, 133, image, 43, 115, 3, 6 );
+
+                    // Fix the main arc.
+                    Copy( image, 61, 102, image, 56, 102, 3, 1 );
+
+                    // TODO: the distribution of light inside Red Tower is actually not uniform and follows the window on from th left.
+                    // However, generating such complex image requires a lot of code so we simply make the rest of the arc uniformed filled.
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 50, 110, 12, 47 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 52, 107, 9, 3 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 62, 111, 1, 46 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 63, 113, 1, 20 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 63, 141, 1, 16 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 64, 115, 1, 17 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 64, 152, 1, 5 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 65, 116, 1, 15 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 66, 118, 1, 12 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 51, 108, 1, 2 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 55, 103, 5, 4 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 61, 109, 1, 1 }, seededGen );
+                    fillRandomPixelsFromImage( image, { 61, 104, 2, 3 }, image, { 52, 106, 1, 1 }, seededGen );
                 }
                 return true;
+            case ICN::SCENIBKG:
+                LoadOriginalICN( id );
+                if ( !_icnVsSprite[id].empty() && _icnVsSprite[id][0].width() == 436 && _icnVsSprite[id][0].height() == 476 ) {
+                    const Sprite & helper = GetICN( ICN::CSPANBKE, 1 );
+                    if ( !helper.empty() ) {
+                        Sprite & original = _icnVsSprite[id][0];
+                        Sprite temp( original.width(), original.height() + 12 );
+                        temp.reset();
+                        Copy( original, 0, 0, temp, 0, 0, original.width(), original.height() );
+                        Copy( helper, 0, helper.height() - 12, temp, 0, temp.height() - 12, 300, 12 );
+                        Copy( helper, helper.width() - ( temp.width() - 300 ), helper.height() - 12, temp, 300 - 16, temp.height() - 12, temp.width() - 300, 12 );
+                        original = std::move( temp );
+                    }
+                }
+                return true;
+            case ICN::CSTLCAPS:
+                LoadOriginalICN( id );
+                if ( !_icnVsSprite[id].empty() && _icnVsSprite[id][0].width() == 84 && _icnVsSprite[id][0].height() == 81 ) {
+                    const Sprite & castle = GetICN( ICN::TWNSCSTL, 0 );
+                    if ( !castle.empty() ) {
+                        Blit( castle, 206, 106, _icnVsSprite[id][0], 2, 2, 33, 67 );
+                    }
+                }
+                return true;
+            case ICN::LGNDXTRA:
+                // Exit button is too huge due to 1 pixel presence at the bottom of the image.
+                LoadOriginalICN( id );
+                if ( _icnVsSprite[id].size() >= 6 ) {
+                    auto & original = _icnVsSprite[id];
+                    if ( original[4].height() == 142 ) {
+                        const Point offset( original[4].x(), original[4].y() );
+                        original[4] = Crop( original[4], 0, 0, original[4].width(), 25 );
+                        original[4].setPosition( offset.x, offset.y );
+                    }
+
+                    if ( original[5].height() == 142 ) {
+                        const Point offset( original[5].x(), original[5].y() );
+                        original[5] = Crop( original[5], 0, 0, original[5].width(), 25 );
+                        original[5].setPosition( offset.x, offset.y );
+                    }
+                }
+                return true;
+            case ICN::LGNDXTRE:
+                // Exit button is too huge due to 1 pixel presence at the bottom of the image.
+                LoadOriginalICN( id );
+                if ( _icnVsSprite[id].size() >= 6 ) {
+                    auto & original = _icnVsSprite[id];
+                    if ( original[4].height() == 142 ) {
+                        const Point offset( original[4].x(), original[4].y() );
+                        original[4] = Crop( original[4], 0, 0, original[4].width(), 25 );
+                        original[4].setPosition( offset.x, offset.y );
+                    }
+                }
+                return true;
+            case ICN::ESPANBKG_EVIL: {
+                _icnVsSprite[id].resize( 2 );
+
+                const Rect roi{ 28, 28, 265, 206 };
+
+                Sprite & output = _icnVsSprite[id][0];
+                _icnVsSprite[id][0] = GetICN( ICN::CSPANBKE, 0 );
+                Copy( GetICN( ICN::ESPANBKG, 0 ), roi.x, roi.y, output, roi.x, roi.y, roi.width, roi.height );
+
+                convertToEvilInterface( output, roi );
+
+                _icnVsSprite[id][1] = GetICN( ICN::ESPANBKG, 1 );
+
+                return true;
+            }
+            case ICN::RECR2BKG_EVIL: {
+                GetICN( ICN::RECR2BKG, 0 );
+                _icnVsSprite[id] = _icnVsSprite[ICN::RECR2BKG];
+                if ( !_icnVsSprite[id].empty() ) {
+                    const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() );
+                    convertToEvilInterface( _icnVsSprite[id][0], roi );
+                    copyEvilInterfaceElements( _icnVsSprite[id][0], roi );
+                }
+
+                return true;
+            }
+            case ICN::RECRBKG_EVIL: {
+                GetICN( ICN::RECRBKG, 0 );
+                _icnVsSprite[id] = _icnVsSprite[ICN::RECRBKG];
+                if ( !_icnVsSprite[id].empty() ) {
+                    const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() );
+                    convertToEvilInterface( _icnVsSprite[id][0], roi );
+                    copyEvilInterfaceElements( _icnVsSprite[id][0], roi );
+                }
+
+                return true;
+            }
+            case ICN::STONEBAK_EVIL: {
+                GetICN( ICN::STONEBAK, 0 );
+                _icnVsSprite[id] = _icnVsSprite[ICN::STONEBAK];
+                if ( !_icnVsSprite[id].empty() ) {
+                    const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() );
+                    convertToEvilInterface( _icnVsSprite[id][0], roi );
+                }
+
+                return true;
+            }
+            case ICN::WELLBKG_EVIL: {
+                GetICN( ICN::WELLBKG, 0 );
+                _icnVsSprite[id] = _icnVsSprite[ICN::WELLBKG];
+                if ( !_icnVsSprite[id].empty() ) {
+                    const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() - 19 );
+                    convertToEvilInterface( _icnVsSprite[id][0], roi );
+                }
+
+                return true;
+            }
+            case ICN::CASLWIND_EVIL: {
+                GetICN( ICN::CASLWIND, 0 );
+                _icnVsSprite[id] = _icnVsSprite[ICN::CASLWIND];
+                if ( !_icnVsSprite[id].empty() ) {
+                    const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() );
+                    convertToEvilInterface( _icnVsSprite[id][0], roi );
+                }
+
+                return true;
+            }
+            case ICN::CASLXTRA_EVIL: {
+                GetICN( ICN::CASLXTRA, 0 );
+                _icnVsSprite[id] = _icnVsSprite[ICN::CASLXTRA];
+                if ( !_icnVsSprite[id].empty() ) {
+                    const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() );
+                    convertToEvilInterface( _icnVsSprite[id][0], roi );
+                }
+
+                return true;
+            }
+            case ICN::STRIP_BACKGROUND_EVIL: {
+                _icnVsSprite[id].resize( 1 );
+                _icnVsSprite[id][0] = GetICN( ICN::STRIP, 11 );
+
+                const Rect roi( 0, 0, _icnVsSprite[id][0].width(), _icnVsSprite[id][0].height() - 7 );
+                convertToEvilInterface( _icnVsSprite[id][0], roi );
+
+                return true;
+            }
+            case ICN::GOOD_CAMPAIGN_BUTTONS:
+            case ICN::EVIL_CAMPAIGN_BUTTONS: {
+                auto & image = _icnVsSprite[id];
+                image.resize( 8 );
+
+                const int originalIcnId = ( id == ICN::GOOD_CAMPAIGN_BUTTONS ) ? ICN::CAMPXTRG : ICN::CAMPXTRE;
+
+                for ( int32_t i = 0; i < 4; ++i ) {
+                    image[2 * i] = GetICN( originalIcnId, 2 * i );
+
+                    const Sprite & original = GetICN( originalIcnId, 2 * i + 1 );
+
+                    Sprite & resized = image[2 * i + 1];
+                    resized.resize( image[2 * i].width(), image[2 * i].height() );
+                    resized.reset();
+
+                    Copy( original, 0, 0, resized, original.x(), original.y(), original.width(), original.height() );
+                }
+
+                return true;
+            }
             default:
                 break;
             }
@@ -1965,7 +2236,7 @@ namespace fheroes2
             if ( _tilVsImage[id].empty() ) {
                 _tilVsImage[id].resize( 4 ); // 4 possible sides
 
-                const std::vector<uint8_t> & data = ::AGG::ReadChunk( tilFileName[id] );
+                const std::vector<uint8_t> & data = ::AGG::getDataFromAggFile( tilFileName[id] );
                 if ( data.size() < headerSize ) {
                     // The important resource is absent! Make sure that you are using the correct version of the game.
                     assert( 0 );
@@ -2096,8 +2367,6 @@ namespace fheroes2
 
             // TODO: correct naming and standartise the code
             switch ( fontType ) {
-            case Font::GRAY_BIG:
-                return GetICN( ICN::GRAY_FONT, character - 0x20 );
             case Font::GRAY_SMALL:
                 return GetICN( ICN::GRAY_SMALL_FONT, character - 0x20 );
             case Font::YELLOW_BIG:
@@ -2120,7 +2389,6 @@ namespace fheroes2
         {
             switch ( fontType ) {
             case Font::BIG:
-            case Font::GRAY_BIG:
             case Font::YELLOW_BIG:
                 return static_cast<uint32_t>( GetMaximumICNIndex( ICN::FONT ) ) + 0x20 - 1;
             case Font::SMALL:

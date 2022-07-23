@@ -1,7 +1,7 @@
 # Russian translation of fheroes2
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# fheroes2 team <fhomm2@gmail.com>, 2021
+# fheroes2 team <fhomm2@gmail.com>, 2021 - 2022
 # Igor Orlov <igororlov@inbox.ru>, 2009.
 # Andrey Afletdinov <afletdinov@gmail.com>, 2009.
 #
@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fheroes2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-05-24 15:38+0000\n"
+"POT-Creation-Date: 2022-07-10 14:31+0000\n"
 "PO-Revision-Date: 2022-05-10 16:34+0200\n"
 "Last-Translator: fheroes2 team <fhomm2@gmail.com>\n"
 "Language-Team: <ru@li.org> <>\n"
@@ -165,8 +165,12 @@ msgstr "Переместить %{name}"
 msgid "Set Count"
 msgstr "Количество"
 
-msgid "%{name} half the enemy troops!"
-msgstr "%{name} убивает половину вражеского отряда!"
+#, fuzzy
+msgid "%{name} destroys half the enemy troops!"
+msgid_plural "%{name} destroy half the enemy troops!"
+msgstr[0] "%{name} убивает половину вражеского отряда!"
+msgstr[1] "%{name} убивает половину вражеского отряда!"
+msgstr[2] "%{name} убивает половину вражеского отряда!"
 
 msgid "%{name} has turned off the auto battle"
 msgstr "%{name} выключил автобитву"
@@ -523,8 +527,12 @@ msgstr "%{name} пропускают ход."
 msgid "%{name} wait their turn."
 msgstr "%{name} ожидают."
 
-msgid "%{attacker} do %{damage} damage."
-msgstr "%{attacker} наносят %{damage} урона."
+#, fuzzy
+msgid "%{attacker} does %{damage} damage."
+msgid_plural "%{attacker} do %{damage} damage."
+msgstr[0] "%{attacker} наносят %{damage} урона."
+msgstr[1] "%{attacker} наносят %{damage} урона."
+msgstr[2] "%{attacker} наносят %{damage} урона."
 
 msgid "1 creature perishes."
 msgid_plural "%{count} creatures perish."
@@ -2013,8 +2021,8 @@ msgstr "Стоунхендж"
 msgid "Fenced Meadow"
 msgstr "Огороженная лужайка"
 
-msgid "Red Tower"
-msgstr "Красная башня"
+msgid "sorceress|Red Tower"
+msgstr "Алая башня"
 
 msgid "Dungeon"
 msgstr "Сокровищница"
@@ -2042,6 +2050,9 @@ msgstr "Болото"
 
 msgid "Green Tower"
 msgstr "Зелёная башня"
+
+msgid "warlock|Red Tower"
+msgstr "Красная башня"
 
 msgid "Black Tower"
 msgstr "Чёрная башня"
@@ -2566,6 +2577,46 @@ msgstr "Нет места"
 msgid "the garrison"
 msgstr "в отряде"
 
+msgid "off"
+msgstr "выкл."
+
+msgid "Music"
+msgstr "Музыка"
+
+msgid "Effects"
+msgstr "Эффекты"
+
+msgid "MIDI"
+msgstr "MIDI"
+
+msgid "MIDI Expansion"
+msgstr "Расширение MIDI"
+
+msgid "External"
+msgstr "Внешний"
+
+msgid "Music Type"
+msgstr "Тип музыки"
+
+msgid "3D Audio"
+msgstr ""
+
+msgid "Toggle ambient music level."
+msgstr "Уровень музыки."
+
+msgid "Toggle foreground sounds level."
+msgstr "Уровень звуков."
+
+msgid "Change the type of music."
+msgstr "Изменить тип музыки."
+
+#, fuzzy
+msgid "Toggle 3D effects of foreground sounds."
+msgstr "Уровень звуков."
+
+msgid "Okay"
+msgstr "Принять"
+
 msgid "Build a new ship:"
 msgstr "Построить новый корабль:"
 
@@ -2615,26 +2666,12 @@ msgstr "Расширенные"
 msgid "Settings"
 msgstr "Настройки"
 
-msgid "off"
-msgstr "выкл."
+msgid "Audio"
+msgstr ""
 
-msgid "Music"
-msgstr "Музыка"
-
-msgid "Effects"
-msgstr "Эффекты"
-
-msgid "MIDI"
-msgstr "MIDI"
-
-msgid "MIDI Expansion"
-msgstr "Расширение MIDI"
-
-msgid "External"
-msgstr "Внешний"
-
-msgid "Music Type"
-msgstr "Тип музыки"
+#, fuzzy
+msgid "settings"
+msgstr "Настройки"
 
 #, fuzzy
 msgid "Hot Keys"
@@ -2658,6 +2695,27 @@ msgstr ""
 msgid "Text Support"
 msgstr "Контроль качества и поддержка"
 
+msgid "Evil"
+msgstr "Злой"
+
+msgid "Good"
+msgstr "Добрый"
+
+msgid "Interface Type"
+msgstr "Интерфейс"
+
+msgid "Auto Resolve"
+msgstr "Авто, с магией"
+
+msgid "Auto, No Spells"
+msgstr "Авто, без магии"
+
+msgid "Manual"
+msgstr "Вручную"
+
+msgid "Battles"
+msgstr "Битвы"
+
 msgid "Select Game Language"
 msgstr "Выберите язык игры:"
 
@@ -2670,20 +2728,21 @@ msgstr "Выбор разрешения экрана"
 msgid "Change resolution of the game."
 msgstr "Изменить разрешение экрана."
 
+#, fuzzy
+msgid "Change audio settings of the game."
+msgstr "Сменить язык, разрешение и настройки игры."
+
 msgid "Experimental game settings."
 msgstr "Вы можете настроить игру по своему усмотрению."
 
-msgid "Toggle ambient music level."
-msgstr "Уровень музыки."
-
-msgid "Toggle foreground sounds level."
-msgstr "Уровень звуков."
-
-msgid "Change the type of music."
-msgstr "Изменить тип музыки."
+msgid "Toggle instant battle mode."
+msgstr "Режим мгновенного боя."
 
 msgid "Check all Hot Keys used in the game."
 msgstr ""
+
+msgid "Toggle the type of interface you want to use."
+msgstr "Переключить тип интерфейса, который Вы хотите использовать."
 
 msgid ""
 "Toggle color cursors on/off. Color cursors look nicer, but sometimes don't "
@@ -2694,9 +2753,6 @@ msgid ""
 "Toggle text support mode to output extra information about windows and "
 "events in the game."
 msgstr ""
-
-msgid "Okay"
-msgstr "Принять"
 
 msgid "Attention"
 msgstr "Внимание"
@@ -3161,15 +3217,6 @@ msgstr "Скор. врагов"
 msgid "Scroll Speed"
 msgstr "Скор. просмотра"
 
-msgid "Evil"
-msgstr "Злой"
-
-msgid "Good"
-msgstr "Добрый"
-
-msgid "Interface Type"
-msgstr "Интерфейс"
-
 msgid "Hide"
 msgstr "Скрыть"
 
@@ -3178,18 +3225,6 @@ msgstr "Показать"
 
 msgid "Interface"
 msgstr "Интерфейс"
-
-msgid "Auto Resolve"
-msgstr "Авто, с магией"
-
-msgid "Auto, No Spells"
-msgstr "Авто, без магии"
-
-msgid "Battles"
-msgstr "Битвы"
-
-msgid "Manual"
-msgstr "Вручную"
 
 msgid "Change the speed at which your heroes move on the main screen."
 msgstr ""
@@ -3205,14 +3240,8 @@ msgstr ""
 msgid "Sets the speed at which you scroll the window."
 msgstr "Устанавливает скорость прокрутки в окне."
 
-msgid "Toggle the type of interface you want to use."
-msgstr "Переключить тип интерфейса, который Вы хотите использовать."
-
 msgid "Toggle interface visibility."
 msgstr "Показать/скрыть интерфейс."
-
-msgid "Toggle instant battle mode."
-msgstr "Режим мгновенного боя."
 
 msgid "Att."
 msgstr "Атк."
@@ -3345,6 +3374,10 @@ msgstr "Контроль качества и поддержка"
 msgid "Development"
 msgstr "Разработчик"
 
+#, fuzzy
+msgid "Dev and Support"
+msgstr "Контроль качества и поддержка"
+
 msgid "Visit us at "
 msgstr "Посетите нас"
 
@@ -3370,7 +3403,7 @@ msgid "Original project before 0.7"
 msgstr "Разработчик до 0.7"
 
 #, fuzzy
-msgid "Original Heroes of Might and Magic II team"
+msgid "Heroes of Might and Magic II: The Succession Wars team"
 msgstr "Команда разработчиков New World Computing 1996 года"
 
 msgid "Designed and Directed"
@@ -3424,6 +3457,76 @@ msgstr "Помощь и справка"
 msgid "Scenarios"
 msgstr "Разработка карт"
 
+#, fuzzy
+msgid "Heroes of Might and Magic II: The Price of Loyalty team"
+msgstr "Команда разработчиков New World Computing 1996 года"
+
+msgid "Cyberlore Studios"
+msgstr ""
+
+msgid "Design Lead"
+msgstr ""
+
+msgid "Designers"
+msgstr ""
+
+#, fuzzy
+msgid "Programming Lead"
+msgstr "Программист и дизайнер"
+
+msgid "Art Lead"
+msgstr ""
+
+#, fuzzy
+msgid "Playtesters"
+msgstr "2 игрока"
+
+msgid "New World Computing"
+msgstr ""
+
+msgid "Designer"
+msgstr ""
+
+#, fuzzy
+msgid "Producers"
+msgstr "Продюсер"
+
+#, fuzzy
+msgid "QA Managers"
+msgstr "Менеджер по контролю качества"
+
+#, fuzzy
+msgid "Sound Design"
+msgstr "Композиторы и звукорежиссёры"
+
+#, fuzzy
+msgid "Town Themes"
+msgstr "Врата в город"
+
+msgid "Alto Sax"
+msgstr ""
+
+msgid "Harpsichord and Piano"
+msgstr ""
+
+msgid "Basso Vocal"
+msgstr ""
+
+msgid "Soprano Vocal"
+msgstr ""
+
+msgid "Recorded at Green Street Studios"
+msgstr ""
+
+msgid "German Consultant"
+msgstr ""
+
+msgid "Map Designers"
+msgstr ""
+
+msgid "Package Design"
+msgstr ""
+
 msgid "Unknown Hero"
 msgstr "Неизвестный герой"
 
@@ -3444,19 +3547,16 @@ msgstr "Кампания"
 msgid "View High Scores for Campaigns."
 msgstr "Посмотреть очки рейтинга за кампании."
 
-msgid ""
-"Invalid file game type. Please ensure that you are running the latest type "
-"of save files."
-msgstr ""
-"Неподдерживаемый тип файла. Пожалуйста, убедитесь, что Вы используете "
-"последнюю версию файлов."
-
 msgid "Warning"
 msgstr "Внимание"
 
+msgid "This file contains a save with an invalid game type."
+msgstr ""
+
+#, fuzzy
 msgid ""
-"This file is saved in the \"The Price of Loyalty\" version.\n"
-"Some items may be unavailable."
+"This file was saved by the \"The Price of Loyalty\" version of the game.\n"
+"Some items may not be available."
 msgstr ""
 "Этот файл сохранен в версии \"Цена верности\".\n"
 "Некоторые возможности игры будут недоступны."
@@ -3574,6 +3674,11 @@ msgstr "Сменить язык, разрешение и настройки иг
 
 msgid "Game Settings"
 msgstr "Настройки игры"
+
+msgid ""
+"Required video files for campaign selection window are missing. Please make "
+"sure that all necessary files are present in the system."
+msgstr ""
 
 #, fuzzy
 msgid ""
@@ -3701,20 +3806,6 @@ msgid ""
 msgstr ""
 "Враг захватил %{name}!\n"
 "Вы проиграли."
-
-msgid ""
-"The enemy has captured the hero %{name}!\n"
-"Your quest is a failure."
-msgstr ""
-"Враг захватил героя %{name}!\n"
-"Ваше задание провалено."
-
-msgid ""
-"The enemy has found the %{name}.\n"
-"Your quest is a failure."
-msgstr ""
-"Враг нашёл %{name}.\n"
-"Ваше задание провалено."
 
 msgid ""
 "The enemy has built up over %{count} gold in his treasury.\n"
@@ -3887,7 +3978,7 @@ msgid ""
 "%{color} player, you only have %{day} days left to capture a town, or you "
 "will be banished from this land."
 msgstr ""
-"%{сolor} игрок, у Вас осталось %{day} суток, чтобы захватить город, иначе Вы "
+"%{color} игрок, у Вас осталось %{day} суток, чтобы захватить город, иначе Вы "
 "будете изгнаны из этих земель."
 
 msgid "%{color} player's turn."
@@ -5708,7 +5799,8 @@ msgid ""
 "cast the spell."
 msgstr "Заклинание требует %{mana} очков магии. У Вас только %{point}."
 
-msgid "The spell is not found."
+#, fuzzy
+msgid "The spell was not found."
 msgstr "Заклинание не найдено."
 
 msgid "Only heroes can cast this spell."
@@ -9260,9 +9352,6 @@ msgstr ""
 "суммарное здоровье которого не превышает\n"
 "%{hp} здоровья."
 
-msgid "game: always confirm for rewrite savefile"
-msgstr "игра: всегда делать запрос на перезапись игры"
-
 msgid "game: remember last focus"
 msgstr "игра: запомнить последнюю позицию фокуса (героя/замка)"
 
@@ -9317,7 +9406,7 @@ msgstr "игра: использовать серую тему интерфей�
 msgid "game: hide interface"
 msgstr "игра: выключить интерфейс (весь экран игровое поле)"
 
-msgid "game: offer to continue the game afer victory condition"
+msgid "game: offer to continue the game after victory condition"
 msgstr "игра: после победы возможно продолжить игру"
 
 msgid "The ultimate artifact is really the %{name}."
@@ -9383,5 +9472,5 @@ msgstr ""
 "https://github.com/ihhub/\n"
 "fheroes2/releases"
 
-#~ msgid "Quit out of fheroes2."
-#~ msgstr "Выйти из fheroes2."
+#~ msgid "game: always confirm for rewrite savefile"
+#~ msgstr "игра: всегда делать запрос на перезапись игры"

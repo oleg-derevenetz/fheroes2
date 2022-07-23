@@ -62,6 +62,19 @@ namespace AI
         EXPLORER
     };
 
+    // Although AI heroes are capable to find their own tasks strategic AI should be able to focus them on most critical tasks
+    enum class PriorityTask : int
+    {
+        // AI will focus on siegeing or chasing the selected enemy castle or hero.
+        ATTACK,
+
+        // Target will usually be a friendly castle. AI will move heroes to defend and garrison it.
+        DEFEND,
+
+        // Target must be a friendly castle or hero. AI with such priority set should focus on bringing more troops to the target.
+        REINFORCE
+    };
+
     const double ARMY_ADVANTAGE_DESPERATE = 0.8;
     const double ARMY_ADVANTAGE_SMALL = 1.3;
     const double ARMY_ADVANTAGE_MEDIUM = 1.5;
@@ -71,9 +84,7 @@ namespace AI
     {
     public:
         virtual void KingdomTurn( Kingdom & kingdom ) = 0;
-        virtual void CastleTurn( Castle & castle, bool defensive ) = 0;
         virtual void BattleTurn( Battle::Arena & arena, const Battle::Unit & unit, Battle::Actions & actions ) = 0;
-        virtual bool HeroesTurn( VecHeroes & heroes ) = 0;
 
         virtual void revealFog( const Maps::Tiles & tile ) = 0;
 
@@ -82,9 +93,7 @@ namespace AI
         virtual void HeroesPreBattle( HeroBase & hero, bool isAttacking );
         virtual void HeroesAfterBattle( HeroBase & hero, bool wasAttacking );
         virtual void HeroesPostLoad( Heroes & hero );
-        virtual bool HeroesCanMove( const Heroes & hero );
-        virtual bool HeroesGetTask( Heroes & hero );
-        virtual void HeroesActionComplete( Heroes & hero, const MP2::MapObjectType objectType );
+        virtual void HeroesActionComplete( Heroes & hero, int32_t tileIndex, const MP2::MapObjectType objectType );
         virtual void HeroesActionNewPosition( Heroes & hero );
         virtual void HeroesClearTask( const Heroes & hero );
         virtual void HeroesLevelUp( Heroes & hero );
@@ -129,7 +138,6 @@ namespace AI
     bool BuildIfAvailable( Castle & castle, int building );
     bool BuildIfEnoughResources( Castle & castle, int building, uint32_t minimumMultiplicator );
     uint32_t GetResourceMultiplier( uint32_t min, uint32_t max );
-    void ReinforceHeroInCastle( Heroes & hero, Castle & castle, const Funds & budget );
     void OptimizeTroopsOrder( Army & hero );
 
     StreamBase & operator<<( StreamBase &, const AI::Base & );
