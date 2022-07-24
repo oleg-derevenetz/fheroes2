@@ -381,6 +381,7 @@ namespace
 
         const Mix_MusicType musicType = Mix_GetMusicType( mix );
 
+        ERROR_LOG( "Music type: " << (int)musicType )
         return ( musicType == Mix_MusicType::MUS_OGG ) || ( musicType == Mix_MusicType::MUS_MP3 ) || ( musicType == Mix_MusicType::MUS_FLAC );
     }
 
