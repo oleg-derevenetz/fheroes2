@@ -275,7 +275,7 @@ namespace
                 const std::string & file = std::get<std::string>( _source );
 
                 result = Mix_LoadMUS( System::FileNameToUTF8( file ).c_str() );
-                if ( result == nullptr ) {
+                if ( result != nullptr ) {
                     ERROR_LOG( "Failed to create a music track from file " << file << ". The error: " << Mix_GetError() )
                 }
             }
@@ -1131,7 +1131,7 @@ void Music::SetMidiSoundFonts( const ListFiles & files )
         filePaths.pop_back();
     }
 
-    if ( Mix_SetSoundFonts( System::FileNameToUTF8( filePaths ).c_str() ) == 0 ) {
+    if ( Mix_SetSoundFonts( System::FileNameToUTF8( filePaths ).c_str() ) != 0 ) {
         ERROR_LOG( "Failed to set MIDI SoundFonts using paths " << filePaths << ". The error: " << Mix_GetError() )
     }
 }
