@@ -124,7 +124,7 @@ jobs:
       continue-on-error: true
       run: |
         git clone --depth 1 https://github.com/vitasdk/vdpm
-        cd vdpm
+        cd vdpmXXX
         export PATH="$VITASDK/bin:$PATH"
         ./bootstrap-vitasdk.sh
         ./install-all.sh
