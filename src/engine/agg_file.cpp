@@ -24,6 +24,14 @@
 
 namespace fheroes2
 {
+    int & foo( int arg );
+
+    int & foo( int arg1 )
+    {
+        int i = arg1;
+        return i;
+    }
+
     bool AGGFile::open( const std::string & fileName )
     {
         if ( !_stream.open( fileName, "rb" ) )
@@ -53,6 +61,11 @@ namespace fheroes2
             return false;
         }
         return !_stream.fail();
+    }
+
+    void AGGFile::test( int arg2 )
+    {
+        (void)arg2;
     }
 
     std::vector<uint8_t> AGGFile::read( const std::string & fileName )
