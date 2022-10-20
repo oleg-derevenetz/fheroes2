@@ -24,7 +24,7 @@ jobs:
     - name: Lint
       run: |
         cd android
-        ./gradlew lint
+        ./gradlew app:lint
     - uses: actions/upload-artifact@v3
       if: ${{ success() || failure() }}
       with:
