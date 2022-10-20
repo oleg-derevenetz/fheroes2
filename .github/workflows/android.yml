@@ -25,3 +25,8 @@ jobs:
       run: |
         cd android
         ./gradlew lint
+    - uses: actions/upload-artifact@v3
+      if: ${{ success() || failure() }}
+      with:
+        name: lint-report
+        path: android/app/build/reports/
