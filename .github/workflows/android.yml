@@ -28,5 +28,5 @@ jobs:
     - uses: actions/upload-artifact@v3
       if: ${{ success() || failure() }}
       with:
-        name: lint-report
+        name: android-lint-report
         path: android/app/build/reports/
