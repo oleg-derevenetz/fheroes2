@@ -1,0 +1,20 @@
+name: Android
+
+on:
+  workflow_call:
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        wget https://github.com/fheroes2/fheroes2-prebuilt-deps/releases/download/android-deps/android.zip
+        unzip -d android android.zip
+    - name: Build
+      run: |
+        cd android
+        ./gradlew assembleDebug
