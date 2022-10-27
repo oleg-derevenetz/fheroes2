@@ -47,8 +47,8 @@ jobs:
     - name: Install dependencies and cygwin
       run: |
         script/windows/install_packages.bat
-        export PATH="C:/tools/cygwin:$PATH"
-        choco.exe install make gettext-devel -y --source cygwin
+        choco.exe install cygwin cyg-get -y
+        cyg-get.bat make gettext-devel
     - name: DEBUG
       if: ${{ github.event_name == 'pull_request' && ( success() || failure() ) }}
       run: |
