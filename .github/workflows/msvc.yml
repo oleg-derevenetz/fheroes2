@@ -48,6 +48,15 @@ jobs:
       run: |
         script/windows/install_packages.bat
         choco.exe install make gettext-devel -y --source cygwin
+    - name: DEBUG
+      if: ${{ github.event_name == 'pull_request' && ( success() || failure() ) }}
+      run: |
+        cp C:/ProgramData/chocolatey/logs/chocolatey.log .
+    - uses: actions/upload-artifact@v3
+      if: ${{ github.event_name == 'pull_request' && ( success() || failure() ) }}
+      with:
+        name: chocolatey-log
+        path: chocolatey.log
     - uses: microsoft/setup-msbuild@v1
     - name: Generate version information
       run: |
