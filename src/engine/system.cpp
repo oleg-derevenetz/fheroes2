@@ -46,8 +46,11 @@
 #include <SDL_version.h>
 
 #if SDL_VERSION_ATLEAST( 2, 0, 0 )
-#include <SDL_filesystem.h> // IWYU pragma: keep
-#include <SDL_system.h> // IWYU pragma: keep
+#include <SDL_system.h>
+
+#if !defined( __LINUX__ )
+#include <SDL_filesystem.h>
+#endif
 #endif
 
 #if defined( _WIN32 )
