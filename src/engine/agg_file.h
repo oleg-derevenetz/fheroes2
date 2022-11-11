@@ -21,10 +21,7 @@
 #ifndef AGG_FILE_H
 #define AGG_FILE_H
 
-#include <cstddef>
-#include <cstdint>
 #include <map>
-#include <string>
 #include <utility>
 #include <vector>
 

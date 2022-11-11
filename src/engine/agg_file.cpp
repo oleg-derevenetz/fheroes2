@@ -18,9 +18,6 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
-#include <cstdint>
-#include <string>
-
 #include "agg_file.h"
 
 namespace fheroes2
