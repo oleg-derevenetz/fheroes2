@@ -20,7 +20,7 @@ jobs:
     - name: Analyze
       run: |
         set -o pipefail
-        iwyu_tool -p build -j 2 -- -Xiwyu --cxx17ns -Xiwyu --mapping_file="$GITHUB_WORKSPACE/iwyu.map" | (grep -E -v "^$|has correct #includes/fwd-decls" || true) \
+        iwyu_tool -p build -j 4 -- -Xiwyu --cxx17ns -Xiwyu --mapping_file="$GITHUB_WORKSPACE/iwyu.map" | (grep -E -v "^$|has correct #includes/fwd-decls" || true) \
                                                                                                        | tee iwyu-result.txt
     - uses: actions/upload-artifact@v3
       if: ${{ failure() }}
