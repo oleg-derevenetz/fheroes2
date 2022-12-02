@@ -49,6 +49,10 @@ jobs:
         script/windows/install_packages.bat
         choco.exe install cygwin cyg-get -y
         cyg-get.bat make libiconv libunistring5 gettext-devel
+    - name: Download the Microsoft Visual C++ Redistributable package
+      run: |
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.${{ matrix.config.platform }}.exe" -OutFile vc_redist.exe
+      shell: pwsh
     - uses: microsoft/setup-msbuild@v1
     - name: Generate version information
       run: |
