@@ -34,7 +34,7 @@ Source: "..\..\files\data\*.h2d"; DestDir: "{app}\files\data"
 #if DeployConfName == 'SDL2'
 Source: "..\..\files\soundfonts\*.*"; DestDir: "{app}\files\soundfonts"
 #endif
-Source: "..\..\vc_redist.exe"; DestDir: "{tmp}"
+Source: "..\..\.vcredist\vcredist.exe"; DestDir: "{tmp}"
 
 [Tasks]
 Name: desktopicon; Description: "{cm:DesktopIconTaskDescription}"
@@ -51,7 +51,7 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; WorkingDir: 
 [Run]
 Filename: "{app}\extract_homm2_resources.bat"; Flags: runascurrentuser; Check: UseResourcesFromOriginalGame
 Filename: "{app}\download_demo_version.bat"; Flags: runascurrentuser; Check: UseResourcesFromDemoVersion
-Filename: "{tmp}\vc_redist.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "{cm:VCRedistRunStatusMsg}"
+Filename: "{tmp}\vcredist.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "{cm:VCRedistRunStatusMsg}"
 
 [CustomMessages]
 DesktopIconTaskDescription=Desktop shortcut
