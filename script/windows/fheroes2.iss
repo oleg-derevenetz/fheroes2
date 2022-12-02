@@ -21,7 +21,6 @@ ArchitecturesInstallIn64BitMode=x64
 
 [Files]
 Source: "{#BuildDir}\{#AppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\vc_redist.exe"; DestDir: "{app}"
 Source: "{#BuildDir}\*.dll"; DestDir: "{app}"
 Source: "..\..\docs\README.txt"; DestDir: "{app}"
 Source: "..\demo\*.bat"; DestDir: "{app}"
@@ -35,6 +34,7 @@ Source: "..\..\files\data\*.h2d"; DestDir: "{app}\files\data"
 #if DeployConfName == 'SDL2'
 Source: "..\..\files\soundfonts\*.*"; DestDir: "{app}\files\soundfonts"
 #endif
+Source: "..\..\vc_redist.exe"; DestDir: "{tmp}"
 
 [Tasks]
 Name: desktopicon; Description: "Desktop shortcut"
@@ -51,8 +51,10 @@ Name: "{autodesktop}\fheroes2"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{
 [Run]
 Filename: "{app}\extract_homm2_resources.bat"; Flags: runascurrentuser; Check: UseResourcesFromOriginalGame
 Filename: "{app}\download_demo_version.bat"; Flags: runascurrentuser; Check: UseResourcesFromDemoVersion
+Filename: "{tmp}\vc_redist.exe"; Parameters: "/q /norestart"; StatusMsg: ExpandConstant('{cm:VCRedistRunStatusMsg}')
 
 [CustomMessages]
+VCRedistRunStatusMsg=Installing the Visual C++ Redistributable package...
 ResourcesSettingsPageCaption=Game Resources Settings
 ResourcesSettingsPageDescription=Configure the source of the original game's resources
 UseResourcesFromOriginalGameRadioButtonCaption=Use resources from the original game
