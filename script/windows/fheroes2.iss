@@ -51,7 +51,7 @@ Name: "{autodesktop}\fheroes2"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{
 [Run]
 Filename: "{app}\extract_homm2_resources.bat"; Flags: runascurrentuser; Check: UseResourcesFromOriginalGame
 Filename: "{app}\download_demo_version.bat"; Flags: runascurrentuser; Check: UseResourcesFromDemoVersion
-Filename: "{tmp}\vc_redist.exe"; Parameters: "/install /passive /norestart"; Flags: deleteafterinstall; StatusMsg: "{cm:VCRedistRunStatusMsg}"
+Filename: "{tmp}\vc_redist.exe"; Parameters: "/install /passive /norestart"; StatusMsg: "{cm:VCRedistRunStatusMsg}"
 
 [CustomMessages]
 VCRedistRunStatusMsg=Installing the Visual C++ Redistributable package...
