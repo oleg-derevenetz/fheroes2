@@ -37,7 +37,7 @@ Source: "..\..\files\soundfonts\*.*"; DestDir: "{app}\files\soundfonts"
 Source: "..\..\vc_redist.exe"; DestDir: "{tmp}"
 
 [Tasks]
-Name: desktopicon; Description: "Desktop shortcut"
+Name: desktopicon; Description: "{cm:DesktopIconTaskDescription}"
 
 [Icons]
 Name: "{group}\fheroes2"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"
@@ -54,6 +54,7 @@ Filename: "{app}\download_demo_version.bat"; Flags: runascurrentuser; Check: Use
 Filename: "{tmp}\vc_redist.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "{cm:VCRedistRunStatusMsg}"
 
 [CustomMessages]
+DesktopIconTaskDescription=Desktop shortcut
 VCRedistRunStatusMsg=Installing the Visual C++ Redistributable package...
 ResourcesSettingsPageCaption=Game Resources Settings
 ResourcesSettingsPageDescription=Configure the source of the original game's resources
