@@ -21,6 +21,7 @@ ArchitecturesInstallIn64BitMode=x64
 
 [Files]
 Source: "{#BuildDir}\{#AppName}.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\..\vc_redist.exe"; DestDir: "{app}"
 Source: "{#BuildDir}\*.dll"; DestDir: "{app}"
 Source: "..\..\docs\README.txt"; DestDir: "{app}"
 Source: "..\demo\*.bat"; DestDir: "{app}"
