@@ -40,13 +40,13 @@ Source: "..\..\vc_redist.exe"; DestDir: "{tmp}"
 Name: desktopicon; Description: "{cm:DesktopIconTaskDescription}"
 
 [Icons]
-Name: "{group}\fheroes2"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"
-Name: "{group}\Download the demo version of the original HoMM2"; Filename: "{app}\download_demo_version.bat"; WorkingDir: "{app}"
-Name: "{group}\Extract game resources from the original distribution of HoMM2"; Filename: "{app}\extract_homm2_resources.bat"; WorkingDir: "{app}"
-Name: "{group}\Resource extraction toolset"; Filename: "{app}\resource_extraction_toolset.bat"; WorkingDir: "{app}"
-Name: "{group}\Game data files"; Filename: %WINDIR%\explorer.exe; Parameters: """%APPDATA%\{#AppName}"""
-Name: "{group}\Uninstall"; Filename: "{uninstallexe}"
-Name: "{autodesktop}\fheroes2"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"
+Name: "{group}\{cm:DownloadDemoVersionIconName}"; Filename: "{app}\download_demo_version.bat"; WorkingDir: "{app}"
+Name: "{group}\{cm:ExtractResourcesIconName}"; Filename: "{app}\extract_homm2_resources.bat"; WorkingDir: "{app}"
+Name: "{group}\{cm:ResourceExtractionToolsetIconName}"; Filename: "{app}\resource_extraction_toolset.bat"; WorkingDir: "{app}"
+Name: "{group}\{cm:GameDataFilesIconName}"; Filename: %WINDIR%\explorer.exe; Parameters: """%APPDATA%\{#AppName}"""
+Name: "{group}\{cm:UninstallIconName}"; Filename: "{uninstallexe}"
+Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppName}.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\extract_homm2_resources.bat"; Flags: runascurrentuser; Check: UseResourcesFromOriginalGame
@@ -55,6 +55,11 @@ Filename: "{tmp}\vc_redist.exe"; Parameters: "/install /quiet /norestart"; Statu
 
 [CustomMessages]
 DesktopIconTaskDescription=Desktop shortcut
+DownloadDemoVersionIconName=Download the demo version of the original HoMM2
+ExtractResourcesIconName=Extract game resources from the original distribution of HoMM2
+ResourceExtractionToolsetIconName=Resource extraction toolset
+GameDataFilesIconName=Game data files
+UninstallIconName=Uninstall
 VCRedistRunStatusMsg=Installing the Visual C++ Redistributable package...
 ResourcesSettingsPageCaption=Game Resources Settings
 ResourcesSettingsPageDescription=Configure the source of the original game's resources
