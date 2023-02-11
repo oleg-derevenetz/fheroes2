@@ -6,7 +6,7 @@ on:
 jobs:
   translation:
     name: Translation update
-    if: ${{ github.repository == 'ihhub/fheroes2' && github.event_name == 'push' }}
+    if: ${{ github.repository == 'oleg-derevenetz/fheroes2' && github.event_name == 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
