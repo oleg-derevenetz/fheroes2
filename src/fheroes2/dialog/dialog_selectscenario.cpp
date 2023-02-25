@@ -100,9 +100,8 @@ namespace
         fheroes2::Text header( info.name, fheroes2::FontType::normalYellow() );
 
         fheroes2::MultiFontText body;
-        body.add( { _( "Location: " ), fheroes2::FontType::normalYellow() } );
-        body.add( { fullPath, fheroes2::FontType::normalWhite() } );
-        body.add( { _( "\n\nMap Type:\n" ), fheroes2::FontType::normalYellow() } );
+
+        body.add( { _( "Map Type:\n" ), fheroes2::FontType::normalYellow() } );
         switch ( info.version ) {
         case GameVersion::SUCCESSION_WARS:
             body.add( { _( "The Succession Wars" ), fheroes2::FontType::normalWhite() } );
@@ -115,6 +114,9 @@ namespace
             assert( 0 );
             break;
         }
+
+        body.add( { _( "\n\nLocation: " ), fheroes2::FontType::smallYellow() } );
+        body.add( { fullPath, fheroes2::FontType::smallWhite() } );
 
         fheroes2::showMessage( header, body, Dialog::ZERO );
     }
