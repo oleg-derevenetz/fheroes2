@@ -189,7 +189,8 @@ void Maps::FileInfo::Reset()
     lossConditionsParam1 = 0;
     lossConditionsParam2 = 0;
 
-    localtime = 0;
+    timestamp = 0;
+
     startWithHeroInEachCastle = false;
 
     version = GameVersion::SUCCESSION_WARS;
@@ -537,7 +538,7 @@ StreamBase & Maps::operator<<( StreamBase & msg, const FileInfo & fi )
 
     return msg << fi.kingdomColors << fi.colorsAvailableForHumans << fi.colorsAvailableForComp << fi.colorsOfRandomRaces << fi.victoryConditions << fi.compAlsoWins
                << fi.allowNormalVictory << fi.victoryConditionsParam1 << fi.victoryConditionsParam2 << fi.lossConditions << fi.lossConditionsParam1
-               << fi.lossConditionsParam2 << fi.localtime << fi.startWithHeroInEachCastle << static_cast<VersionUnderlyingType>( fi.version );
+               << fi.lossConditionsParam2 << fi.timestamp << fi.startWithHeroInEachCastle << static_cast<VersionUnderlyingType>( fi.version );
 }
 
 StreamBase & Maps::operator>>( StreamBase & msg, FileInfo & fi )
@@ -567,7 +568,7 @@ StreamBase & Maps::operator>>( StreamBase & msg, FileInfo & fi )
 
     msg >> fi.kingdomColors >> fi.colorsAvailableForHumans >> fi.colorsAvailableForComp >> fi.colorsOfRandomRaces >> fi.victoryConditions >> fi.compAlsoWins
         >> fi.allowNormalVictory >> fi.victoryConditionsParam1 >> fi.victoryConditionsParam2 >> fi.lossConditions >> fi.lossConditionsParam1 >> fi.lossConditionsParam2
-        >> fi.localtime >> fi.startWithHeroInEachCastle;
+        >> fi.timestamp >> fi.startWithHeroInEachCastle;
 
     using VersionUnderlyingType = std::underlying_type_t<decltype( fi.version )>;
     static_assert( std::is_same_v<VersionUnderlyingType, int>, "Type of version has been changed, check the logic below" );

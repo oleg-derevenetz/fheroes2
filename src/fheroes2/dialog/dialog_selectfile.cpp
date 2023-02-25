@@ -148,7 +148,7 @@ void FileInfoListBox::RedrawItem( const Maps::FileInfo & info, int32_t dstx, int
     char shortHours[20];
     char shortTime[20];
 
-    const tm tmi = System::GetTM( info.localtime );
+    const tm tmi = System::GetTM( info.timestamp );
 
     std::fill( shortDate, std::end( shortDate ), static_cast<char>( 0 ) );
     std::fill( shortHours, std::end( shortHours ), static_cast<char>( 0 ) );

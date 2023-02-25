@@ -171,7 +171,7 @@ namespace Maps
         uint16_t lossConditionsParam1;
         uint16_t lossConditionsParam2;
 
-        uint32_t localtime;
+        uint32_t timestamp;
 
         bool startWithHeroInEachCastle;
 
