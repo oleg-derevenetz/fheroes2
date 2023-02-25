@@ -30,7 +30,6 @@
 
 #include "artifact.h"
 #include "dir.h"
-#include "game.h"
 #include "game_io.h"
 #include "maps_fileinfo.h"
 #include "monster.h"

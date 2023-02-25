@@ -25,7 +25,6 @@
 #include "cursor.h"
 #include "dialog.h"
 #include "dir.h"
-#include "game.h"
 #include "game_hotkeys.h"
 #include "game_interface.h"
 #include "game_io.h"

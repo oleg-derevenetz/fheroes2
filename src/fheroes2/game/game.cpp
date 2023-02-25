@@ -52,7 +52,6 @@
 #include "mus.h"
 #include "players.h"
 #include "rand.h"
-#include "save_format_version.h"
 #include "settings.h"
 #include "tools.h"
 #include "world.h"

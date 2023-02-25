@@ -24,6 +24,7 @@
 #ifndef H2GAMEIO_H
 #define H2GAMEIO_H
 
+#include <cstdint>
 #include <string>
 
 #include "game_mode.h"
