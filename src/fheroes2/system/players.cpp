@@ -297,9 +297,9 @@ void Players::Init( int colors )
 
 void Players::Init( const Maps::FileInfo & fi )
 {
-    if ( fi.kingdom_colors ) {
+    if ( fi.kingdomColors ) {
         clear();
-        const Colors vcolors( fi.kingdom_colors );
+        const Colors vcolors( fi.kingdomColors );
 
         Player * first = nullptr;
 

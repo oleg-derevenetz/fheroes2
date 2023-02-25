@@ -24,6 +24,7 @@
 #define H2MAPSFILEINFO_H
 
 #include <algorithm>
+#include <array>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -44,11 +45,13 @@ namespace Maps
     struct FileInfo
     {
         FileInfo();
-        FileInfo( const FileInfo & );
+        FileInfo( const FileInfo & ) = default;
+        FileInfo( FileInfo && ) = default;
 
         ~FileInfo() = default;
 
-        FileInfo & operator=( const FileInfo & );
+        FileInfo & operator=( const FileInfo & ) = default;
+        FileInfo & operator=( FileInfo && ) = default;
 
         bool ReadMP2( const std::string & );
         bool ReadSAV( const std::string & );
@@ -64,22 +67,22 @@ namespace Maps
 
         int AllowCompHumanColors() const
         {
-            return allow_human_colors & allow_comp_colors;
+            return colorsAvailableForHumans & colorsAvailableForComp;
         }
 
         int AllowHumanColors() const
         {
-            return allow_human_colors;
+            return colorsAvailableForHumans;
         }
 
         int HumanOnlyColors() const
         {
-            return allow_human_colors & ~allow_comp_colors;
+            return colorsAvailableForHumans & ~colorsAvailableForComp;
         }
 
         int ComputerOnlyColors() const
         {
-            return allow_comp_colors & ~allow_human_colors;
+            return colorsAvailableForComp & ~colorsAvailableForHumans;
         }
 
         int KingdomRace( int color ) const;
@@ -116,7 +119,7 @@ namespace Maps
 
         void removeHumanColors( const int colors )
         {
-            allow_human_colors &= ~colors;
+            colorsAvailableForHumans &= ~colors;
         }
 
         std::string String() const;
@@ -126,16 +129,16 @@ namespace Maps
         std::string name;
         std::string description;
 
-        uint16_t size_w;
-        uint16_t size_h;
+        uint16_t width;
+        uint16_t height;
         uint8_t difficulty;
-        uint8_t races[KINGDOMMAX];
-        uint8_t unions[KINGDOMMAX];
+        std::array<uint8_t, KINGDOMMAX> races;
+        std::array<uint8_t, KINGDOMMAX> unions;
 
-        uint8_t kingdom_colors;
-        uint8_t allow_human_colors;
-        uint8_t allow_comp_colors;
-        uint8_t rnd_races;
+        uint8_t kingdomColors;
+        uint8_t colorsAvailableForHumans;
+        uint8_t colorsAvailableForComp;
+        uint8_t colorsOfRandomRaces;
 
         enum VictoryCondition : uint8_t
         {
@@ -155,12 +158,15 @@ namespace Maps
             LOSS_OUT_OF_TIME = 3
         };
 
-        uint8_t conditions_wins; // refer to VictoryCondition
-        bool comp_also_wins;
-        bool allow_normal_victory;
+        // Refer to the VictoryCondition
+        uint8_t victoryConditions;
+        bool compAlsoWins;
+        bool allowNormalVictory;
         uint16_t wins1;
         uint16_t wins2;
-        uint8_t conditions_loss; // refer to LossCondition
+
+        // Refer to the LossCondition
+        uint8_t lossConditions;
         uint16_t loss1;
         uint16_t loss2;
 
@@ -168,7 +174,7 @@ namespace Maps
 
         bool startWithHeroInEachCastle;
 
-        GameVersion _version;
+        GameVersion version;
 
     private:
         void FillUnions( const int side1Colors, const int side2Colors );

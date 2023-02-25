@@ -77,7 +77,7 @@ namespace
             std::time( &rawtime );
             info.localtime = static_cast<uint32_t>( rawtime );
 
-            if ( fi._version == GameVersion::PRICE_OF_LOYALTY )
+            if ( fi.version == GameVersion::PRICE_OF_LOYALTY )
                 status |= IS_PRICE_OF_LOYALTY_MAP;
         }
 

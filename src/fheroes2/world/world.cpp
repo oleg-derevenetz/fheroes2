@@ -378,13 +378,13 @@ void World::NewMaps( int32_t sw, int32_t sh )
 
     Maps::FileInfo fi;
 
-    fi.size_w = static_cast<uint16_t>( width );
-    fi.size_h = static_cast<uint16_t>( height );
+    fi.width = static_cast<uint16_t>( width );
+    fi.height = static_cast<uint16_t>( height );
 
     Settings & conf = Settings::Get();
 
     if ( conf.isPriceOfLoyaltySupported() ) {
-        fi._version = GameVersion::PRICE_OF_LOYALTY;
+        fi.version = GameVersion::PRICE_OF_LOYALTY;
     }
 
     conf.SetCurrentFileInfo( fi );
