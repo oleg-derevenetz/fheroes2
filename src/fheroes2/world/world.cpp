@@ -41,6 +41,7 @@
 #include "color.h"
 #include "direction.h"
 #include "game.h"
+#include "game_io.h"
 #include "game_over.h"
 #include "gamedefs.h"
 #include "heroes.h"
@@ -1393,7 +1394,7 @@ StreamBase & operator>>( StreamBase & msg, World & w )
         >> w.month >> w.heroes_cond_wins >> w.heroes_cond_loss;
 
     static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_1002_RELEASE, "Remove the logic below." );
-    if ( Game::GetLoadVersion() < FORMAT_VERSION_1002_RELEASE ) {
+    if ( Game::GetVersionOfCurrentSaveFile() < FORMAT_VERSION_1002_RELEASE ) {
         uint32_t dummy = 0xDEADBEEF;
 
         msg >> dummy;

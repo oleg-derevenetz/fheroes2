@@ -38,6 +38,7 @@
 #include "dir.h"
 #include "game.h"
 #include "game_hotkeys.h"
+#include "game_io.h"
 #include "gamedefs.h"
 #include "icn.h"
 #include "image.h"
@@ -235,7 +236,7 @@ std::string Dialog::SelectFileSave()
 
 std::string Dialog::SelectFileLoad()
 {
-    const std::string & lastfile = Game::GetLastSavename();
+    const std::string & lastfile = Game::GetLastSaveName();
     return SelectFileListSimple( _( "File to Load:" ), ( !lastfile.empty() ? lastfile : "" ), false );
 }
 

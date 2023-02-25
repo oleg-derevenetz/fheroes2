@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "game_io.h"
+
 #include <algorithm>
 #include <cctype>
 #include <cstdint>
@@ -31,7 +33,6 @@
 #include "campaign_scenariodata.h"
 #include "dialog.h"
 #include "game.h"
-#include "game_io.h"
 #include "game_over.h"
 #include "logging.h"
 #include "maps_fileinfo.h"
@@ -52,6 +53,10 @@ namespace
 
     const uint16_t SAV2ID2 = 0xFF02;
     const uint16_t SAV2ID3 = 0xFF03;
+
+    uint16_t versionOfCurrentSaveFile = CURRENT_FORMAT_VERSION;
+
+    std::string lastSaveName;
 
     struct HeaderSAV
     {
@@ -109,30 +114,34 @@ bool Game::Save( const std::string & filePath, const bool autoSave /* = false */
     fs.setbigendian( true );
 
     if ( !fs.open( filePath, "wb" ) ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, filePath << ", error open" )
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "Error opening the file " << filePath )
         return false;
     }
 
-    uint16_t loadver = GetLoadVersion();
     if ( !autoSave ) {
-        Game::SetLastSavename( filePath );
+        Game::SetLastSaveName( filePath );
     }
 
-    // raw info content
-    fs << static_cast<uint8_t>( SAV2ID3 >> 8 ) << static_cast<uint8_t>( SAV2ID3 & 0xFF ) << std::to_string( loadver ) << loadver
-       << HeaderSAV( conf.CurrentFileInfo(), conf.GameType() );
+    // Always use the latest version of the file save format
+    SetVersionOfCurrentSaveFile( CURRENT_FORMAT_VERSION );
+    uint16_t saveFileVersion = CURRENT_FORMAT_VERSION;
+
+    // Header
+    fs << SAV2ID3 << std::to_string( saveFileVersion ) << saveFileVersion << HeaderSAV( conf.CurrentFileInfo(), conf.GameType() );
     fs.close();
 
     ZStreamFile fz;
     fz.setbigendian( true );
 
-    // zip game data content
-    fz << loadver << World::Get() << Settings::Get() << GameOver::Result::Get();
+    // Game data in ZIP format
+    fz << saveFileVersion << World::Get() << Settings::Get() << GameOver::Result::Get();
 
-    if ( conf.isCampaignGameType() )
+    if ( conf.isCampaignGameType() ) {
         fz << Campaign::CampaignSaveData::Get();
+    }
 
-    fz << SAV2ID3; // eof marker
+    // End-of-data marker
+    fz << SAV2ID3;
 
     return !fz.fail() && fz.write( filePath, true );
 }
@@ -221,7 +230,7 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
     }
 
     DEBUG_LOG( DBG_GAME, DBG_TRACE, "load version: " << binver )
-    SetLoadVersion( binver );
+    SetVersionOfCurrentSaveFile( binver );
 
     fz >> World::Get() >> conf >> GameOver::Result::Get();
 
@@ -259,9 +268,9 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
         return fheroes2::GameMode::CANCEL;
     }
 
-    SetLoadVersion( CURRENT_FORMAT_VERSION );
+    SetVersionOfCurrentSaveFile( CURRENT_FORMAT_VERSION );
 
-    Game::SetLastSavename( filePath );
+    Game::SetLastSaveName( filePath );
     conf.SetGameType( conf.GameType() | Game::TYPE_LOADFILE );
 
     return returnValue;
@@ -312,6 +321,26 @@ bool Game::LoadSAV2FileInfo( const std::string & filePath, Maps::FileInfo & file
     fileInfo.file = filePath;
 
     return true;
+}
+
+void Game::SetVersionOfCurrentSaveFile( const uint16_t version )
+{
+    versionOfCurrentSaveFile = version;
+}
+
+uint16_t Game::GetVersionOfCurrentSaveFile()
+{
+    return versionOfCurrentSaveFile;
+}
+
+const std::string & Game::GetLastSaveName()
+{
+    return lastSaveName;
+}
+
+void Game::SetLastSaveName( const std::string & name )
+{
+    lastSaveName = name;
 }
 
 std::string Game::GetSaveDir()

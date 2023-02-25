@@ -21,6 +21,8 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "game.h"
+
 #include <array>
 #include <cassert>
 #include <cmath>
@@ -39,9 +41,9 @@
 #include "cursor.h"
 #include "dialog.h"
 #include "dialog_game_settings.h"
-#include "game.h"
 #include "game_delays.h"
 #include "game_hotkeys.h"
+#include "game_io.h"
 #include "game_mainmenu_ui.h"
 #include "game_mode.h"
 #include "game_video.h"
@@ -522,7 +524,7 @@ fheroes2::GameMode Game::NewGame()
     AudioManager::PlayMusicAsync( MUS::MAINMENU, Music::PlaybackMode::RESUME_AND_PLAY_INFINITE );
 
     // reset last save name
-    Game::SetLastSavename( "" );
+    Game::SetLastSaveName( "" );
 
     // setup cursor
     const CursorRestorer cursorRestorer( true, Cursor::POINTER );

@@ -28,6 +28,7 @@
 #include "game.h"
 #include "game_hotkeys.h"
 #include "game_interface.h"
+#include "game_io.h"
 #include "game_mode.h"
 #include "gamedefs.h"
 #include "icn.h"

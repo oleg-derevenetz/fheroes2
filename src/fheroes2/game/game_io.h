@@ -35,6 +35,17 @@ namespace Maps
 
 namespace Game
 {
+    const std::string & GetLastSaveName();
+    void SetLastSaveName( const std::string & name );
+
+    uint16_t GetVersionOfCurrentSaveFile();
+    void SetVersionOfCurrentSaveFile( const uint16_t version );
+
+    std::string GetSaveDir();
+    std::string GetSaveFileBaseName();
+    std::string GetSaveFileExtension();
+    std::string GetSaveFileExtension( const int gameType );
+
     bool AutoSave();
     bool Save( const std::string & filePath, const bool autoSave = false );
 
