@@ -248,19 +248,6 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
 
     fz >> World::Get() >> conf >> GameOver::Result::Get();
 
-    // Settings should contain the full path to the current map file, if this map is available
-    conf.SetMapsFile( Settings::GetLastFile( "maps", System::GetBasename( conf.MapsFile() ) ) );
-
-    if ( !conf.loadedFileLanguage().empty() && conf.loadedFileLanguage() != "en" && conf.loadedFileLanguage() != conf.getGameLanguage() ) {
-        std::string warningMessage( _( "This saved game is localized to '" ) );
-        warningMessage.append( fheroes2::getLanguageName( fheroes2::getLanguageFromAbbreviation( conf.loadedFileLanguage() ) ) );
-        warningMessage.append( _( "' language, but the current language of the game is '" ) );
-        warningMessage.append( fheroes2::getLanguageName( fheroes2::getLanguageFromAbbreviation( conf.getGameLanguage() ) ) );
-        warningMessage += "'.";
-
-        fheroes2::showStandardTextMessage( _( "Warning" ), warningMessage, Dialog::OK );
-    }
-
     fheroes2::GameMode returnValue = fheroes2::GameMode::START_GAME;
 
     if ( conf.isCampaignGameType() ) {
@@ -282,6 +269,19 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
         showGenericErrorMessage();
 
         return fheroes2::GameMode::CANCEL;
+    }
+
+    // Settings should contain the full path to the current map file, if this map is available
+    conf.SetMapsFile( Settings::GetLastFile( "maps", System::GetBasename( conf.MapsFile() ) ) );
+
+    if ( !conf.loadedFileLanguage().empty() && conf.loadedFileLanguage() != "en" && conf.loadedFileLanguage() != conf.getGameLanguage() ) {
+        std::string warningMessage( _( "This saved game is localized to '" ) );
+        warningMessage.append( fheroes2::getLanguageName( fheroes2::getLanguageFromAbbreviation( conf.loadedFileLanguage() ) ) );
+        warningMessage.append( _( "' language, but the current language of the game is '" ) );
+        warningMessage.append( fheroes2::getLanguageName( fheroes2::getLanguageFromAbbreviation( conf.getGameLanguage() ) ) );
+        warningMessage += "'.";
+
+        fheroes2::showStandardTextMessage( _( "Warning" ), warningMessage, Dialog::OK );
     }
 
     Game::SetLastSaveName( filePath );
