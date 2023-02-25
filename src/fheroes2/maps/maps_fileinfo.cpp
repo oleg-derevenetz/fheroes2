@@ -407,14 +407,14 @@ void Maps::FileInfo::FillUnions( const int side1Colors, const int side2Colors )
     }
 }
 
-bool Maps::FileInfo::FileSorting( const FileInfo & fi1, const FileInfo & fi2 )
+bool Maps::FileInfo::FileSorting( const FileInfo & lhs, const FileInfo & rhs )
 {
-    return CaseInsensitiveCompare( fi1.file, fi2.file );
+    return CaseInsensitiveCompare( lhs.file, rhs.file );
 }
 
-bool Maps::FileInfo::NameSorting( const FileInfo & fi1, const FileInfo & fi2 )
+bool Maps::FileInfo::NameSorting( const FileInfo & lhs, const FileInfo & rhs )
 {
-    return CaseInsensitiveCompare( fi1.name, fi2.name );
+    return CaseInsensitiveCompare( lhs.name, rhs.name );
 }
 
 int Maps::FileInfo::KingdomRace( int color ) const

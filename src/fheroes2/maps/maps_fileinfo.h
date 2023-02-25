@@ -60,8 +60,9 @@ namespace Maps
         {
             return file == fi.file;
         }
-        static bool NameSorting( const FileInfo &, const FileInfo & );
-        static bool FileSorting( const FileInfo &, const FileInfo & );
+
+        static bool NameSorting( const FileInfo & lhs, const FileInfo & rhs );
+        static bool FileSorting( const FileInfo & lhs, const FileInfo & rhs );
 
         bool isAllowCountPlayers( int playerCount ) const;
 
