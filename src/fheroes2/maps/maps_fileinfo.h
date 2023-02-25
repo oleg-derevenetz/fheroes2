@@ -171,6 +171,7 @@ namespace Maps
         uint16_t lossConditionsParam1;
         uint16_t lossConditionsParam2;
 
+        // Timestamp of the save file. It only matters for save files.
         uint32_t timestamp;
 
         bool startWithHeroInEachCastle;
