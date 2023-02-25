@@ -21,7 +21,10 @@
  *   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             *
  ***************************************************************************/
 
+#include "players.h"
+
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <ostream>
 
@@ -34,7 +37,6 @@
 #include "maps.h"
 #include "maps_fileinfo.h"
 #include "normal/ai_normal.h"
-#include "players.h"
 #include "race.h"
 #include "rand.h"
 #include "serialize.h"
