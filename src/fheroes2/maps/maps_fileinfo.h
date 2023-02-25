@@ -53,8 +53,8 @@ namespace Maps
         FileInfo & operator=( const FileInfo & ) = default;
         FileInfo & operator=( FileInfo && ) = default;
 
-        bool ReadMP2( const std::string & );
-        bool ReadSAV( const std::string & );
+        bool ReadMP2( const std::string & filePath );
+        bool ReadSAV( const std::string & filePath );
 
         bool operator==( const FileInfo & fi ) const
         {
@@ -94,27 +94,27 @@ namespace Maps
 
         bool WinsFindUltimateArtifact() const
         {
-            return 0 == wins1;
+            return 0 == victoryConditionsParam1;
         }
 
         uint32_t getWinningGoldAccumulationValue() const
         {
-            return wins1 * 1000;
+            return victoryConditionsParam1 * 1000;
         }
 
         fheroes2::Point WinsMapsPositionObject() const
         {
-            return { wins1, wins2 };
+            return { victoryConditionsParam1, victoryConditionsParam2 };
         }
 
         fheroes2::Point LossMapsPositionObject() const
         {
-            return { loss1, loss2 };
+            return { lossConditionsParam1, lossConditionsParam2 };
         }
 
         uint32_t LossCountDays() const
         {
-            return loss1;
+            return lossConditionsParam1;
         }
 
         void removeHumanColors( const int colors )
@@ -132,6 +132,7 @@ namespace Maps
         uint16_t width;
         uint16_t height;
         uint8_t difficulty;
+
         std::array<uint8_t, KINGDOMMAX> races;
         std::array<uint8_t, KINGDOMMAX> unions;
 
@@ -162,13 +163,13 @@ namespace Maps
         uint8_t victoryConditions;
         bool compAlsoWins;
         bool allowNormalVictory;
-        uint16_t wins1;
-        uint16_t wins2;
+        uint16_t victoryConditionsParam1;
+        uint16_t victoryConditionsParam2;
 
         // Refer to the LossCondition
         uint8_t lossConditions;
-        uint16_t loss1;
-        uint16_t loss2;
+        uint16_t lossConditionsParam1;
+        uint16_t lossConditionsParam2;
 
         uint32_t localtime;
 
