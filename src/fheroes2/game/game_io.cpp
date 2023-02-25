@@ -51,7 +51,6 @@ namespace
 {
     const std::string autoSaveName{ "AUTOSAVE" };
 
-    const uint16_t SAV2ID2 = 0xFF02;
     const uint16_t SAV2ID3 = 0xFF03;
 
     uint16_t versionOfCurrentSaveFile = CURRENT_FORMAT_VERSION;
@@ -299,38 +298,35 @@ bool Game::LoadSAV2FileInfo( const std::string & filePath, Maps::FileInfo & file
     fs.setbigendian( true );
 
     if ( !fs.open( filePath, "rb" ) ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, filePath << ", error open" )
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "Error opening the file " << filePath )
         return false;
     }
 
-    char major;
-    char minor;
-    fs >> major >> minor;
-    const uint16_t savid = ( static_cast<uint16_t>( major ) << 8 ) | static_cast<uint16_t>( minor );
+    uint16_t savId = 0;
+    fs >> savId;
 
-    // check version sav file
-    if ( savid != SAV2ID2 && savid != SAV2ID3 ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, filePath << ", incorrect SAV2ID" )
+    if ( savId != SAV2ID3 ) {
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "Invalid SAV2ID in the file " << filePath )
         return false;
     }
 
-    std::string strver;
-    uint16_t binver = 0;
+    std::string saveFileVersionStr;
+    uint16_t saveFileVersion = 0;
 
-    // read raw info
-    fs >> strver >> binver;
+    fs >> saveFileVersionStr >> saveFileVersion;
 
-    // hide: unsupported version
-    if ( binver > CURRENT_FORMAT_VERSION || binver < LAST_SUPPORTED_FORMAT_VERSION )
+    DEBUG_LOG( DBG_GAME, DBG_TRACE, "Version of the file " << filePath << ": " << saveFileVersion )
+
+    if ( saveFileVersion > CURRENT_FORMAT_VERSION || saveFileVersion < LAST_SUPPORTED_FORMAT_VERSION ) {
         return false;
+    }
 
-    int fileGameType = Game::TYPE_STANDARD;
     HeaderSAV header;
     fs >> header;
-    fileGameType = header.gameType;
 
-    if ( ( Settings::Get().GameType() & fileGameType ) == 0 )
+    if ( ( Settings::Get().GameType() & header.gameType ) == 0 ) {
         return false;
+    }
 
     fileInfo = header.info;
     fileInfo.file = filePath;
