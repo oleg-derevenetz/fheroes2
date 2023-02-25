@@ -68,17 +68,22 @@ namespace
             , gameType( 0 )
         {}
 
-        HeaderSAV( const Maps::FileInfo & fi, const int gameType_ )
+        HeaderSAV( const Maps::FileInfo & fi, const int type, const uint32_t worldDay, const uint32_t worldWeek, const uint32_t worldMonth )
             : status( 0 )
             , info( fi )
-            , gameType( gameType_ )
+            , gameType( type )
         {
             time_t rawtime;
             std::time( &rawtime );
-            info.timestamp = static_cast<uint32_t>( rawtime );
 
-            if ( fi.version == GameVersion::PRICE_OF_LOYALTY )
+            info.timestamp = static_cast<uint32_t>( rawtime );
+            info.worldDay = worldDay;
+            info.worldWeek = worldWeek;
+            info.worldMonth = worldMonth;
+
+            if ( fi.version == GameVersion::PRICE_OF_LOYALTY ) {
                 status |= IS_PRICE_OF_LOYALTY_MAP;
+            }
         }
 
         uint16_t status;
@@ -121,7 +126,8 @@ bool Game::Save( const std::string & filePath, const bool autoSave /* = false */
     uint16_t saveFileVersion = CURRENT_FORMAT_VERSION;
 
     // Header
-    fs << SAV2ID3 << std::to_string( saveFileVersion ) << saveFileVersion << HeaderSAV( conf.CurrentFileInfo(), conf.GameType() );
+    fs << SAV2ID3 << std::to_string( saveFileVersion ) << saveFileVersion
+       << HeaderSAV( conf.CurrentFileInfo(), conf.GameType(), world.GetDay(), world.GetWeek(), world.GetMonth() );
     fs.close();
 
     ZStreamFile fz;
@@ -319,6 +325,8 @@ bool Game::LoadSAV2FileInfo( const std::string & filePath, Maps::FileInfo & file
     if ( saveFileVersion > CURRENT_FORMAT_VERSION || saveFileVersion < LAST_SUPPORTED_FORMAT_VERSION ) {
         return false;
     }
+
+    SetVersionOfCurrentSaveFile( saveFileVersion );
 
     HeaderSAV header;
     fs >> header;

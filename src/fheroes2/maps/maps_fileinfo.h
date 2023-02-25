@@ -179,6 +179,10 @@ namespace Maps
 
         GameVersion version;
 
+        uint32_t worldDay;
+        uint32_t worldWeek;
+        uint32_t worldMonth;
+
     private:
         void FillUnions( const int side1Colors, const int side2Colors );
     };

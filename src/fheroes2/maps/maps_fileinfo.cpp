@@ -47,6 +47,7 @@
 #include "mp2.h"
 #include "mp2_helper.h"
 #include "race.h"
+#include "save_format_version.h"
 #include "serialize.h"
 #include "settings.h"
 #include "system.h"
@@ -194,6 +195,10 @@ void Maps::FileInfo::Reset()
     startWithHeroInEachCastle = false;
 
     version = GameVersion::SUCCESSION_WARS;
+
+    worldDay = 0;
+    worldWeek = 0;
+    worldMonth = 0;
 }
 
 bool Maps::FileInfo::ReadSAV( const std::string & filePath )
@@ -538,7 +543,8 @@ StreamBase & Maps::operator<<( StreamBase & msg, const FileInfo & fi )
 
     return msg << fi.kingdomColors << fi.colorsAvailableForHumans << fi.colorsAvailableForComp << fi.colorsOfRandomRaces << fi.victoryConditions << fi.compAlsoWins
                << fi.allowNormalVictory << fi.victoryConditionsParam1 << fi.victoryConditionsParam2 << fi.lossConditions << fi.lossConditionsParam1
-               << fi.lossConditionsParam2 << fi.timestamp << fi.startWithHeroInEachCastle << static_cast<VersionUnderlyingType>( fi.version );
+               << fi.lossConditionsParam2 << fi.timestamp << fi.startWithHeroInEachCastle << static_cast<VersionUnderlyingType>( fi.version ) << fi.worldDay
+               << fi.worldWeek << fi.worldMonth;
 }
 
 StreamBase & Maps::operator>>( StreamBase & msg, FileInfo & fi )
@@ -577,6 +583,11 @@ StreamBase & Maps::operator>>( StreamBase & msg, FileInfo & fi )
     msg >> version;
 
     fi.version = static_cast<GameVersion>( version );
+
+    static_assert( LAST_SUPPORTED_FORMAT_VERSION < FORMAT_VERSION_1002_RELEASE, "Remove the check below." );
+    if ( Game::GetVersionOfCurrentSaveFile() >= FORMAT_VERSION_1002_RELEASE ) {
+        msg >> fi.worldDay >> fi.worldWeek >> fi.worldMonth;
+    }
 
     return msg;
 }
