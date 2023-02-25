@@ -118,10 +118,6 @@ bool Game::Save( const std::string & filePath, const bool autoSave /* = false */
         return false;
     }
 
-    if ( !autoSave ) {
-        Game::SetLastSaveName( filePath );
-    }
-
     // Always use the latest version of the file save format
     SetVersionOfCurrentSaveFile( CURRENT_FORMAT_VERSION );
     uint16_t saveFileVersion = CURRENT_FORMAT_VERSION;
@@ -143,78 +139,55 @@ bool Game::Save( const std::string & filePath, const bool autoSave /* = false */
     // End-of-data marker
     fz << SAV2ID3;
 
-    return !fz.fail() && fz.write( filePath, true );
+    if ( fz.fail() || !fz.write( filePath, true ) ) {
+        return false;
+    }
+
+    if ( !autoSave ) {
+        Game::SetLastSaveName( filePath );
+    }
+
+    return true;
 }
 
 fheroes2::GameMode Game::Load( const std::string & filePath )
 {
     DEBUG_LOG( DBG_GAME, DBG_INFO, filePath )
 
+    auto showGenericErrorMessage = []() { fheroes2::showStandardTextMessage( _( "Error" ), _( "The save file is corrupted." ), Dialog::OK ); };
+
     StreamFile fs;
     fs.setbigendian( true );
 
     if ( !fs.open( filePath, "rb" ) ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, filePath << ", error open" )
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "Error opening the file " << filePath )
+
+        showGenericErrorMessage();
+
         return fheroes2::GameMode::CANCEL;
     }
 
-    char major;
-    char minor;
-    fs >> major >> minor;
-    const uint16_t savid = ( static_cast<uint16_t>( major ) << 8 ) | static_cast<uint16_t>( minor );
+    uint16_t savId = 0;
+    fs >> savId;
 
-    // check version sav file
-    if ( savid != SAV2ID2 && savid != SAV2ID3 ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, filePath << ", incorrect SAV2ID" )
+    if ( savId != SAV2ID3 ) {
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "Invalid SAV2ID in the file " << filePath )
+
+        showGenericErrorMessage();
+
         return fheroes2::GameMode::CANCEL;
     }
 
-    std::string strver;
-    uint16_t binver = 0;
+    std::string saveFileVersionStr;
+    uint16_t saveFileVersion = 0;
 
-    // read raw info
-    fs >> strver >> binver;
+    fs >> saveFileVersionStr >> saveFileVersion;
 
-    // hide: unsupported version
-    if ( binver > CURRENT_FORMAT_VERSION || binver < LAST_SUPPORTED_FORMAT_VERSION )
-        return fheroes2::GameMode::CANCEL;
+    DEBUG_LOG( DBG_GAME, DBG_TRACE, "Version of the file " << filePath << ": " << saveFileVersion )
 
-    int fileGameType = Game::TYPE_STANDARD;
-    HeaderSAV header;
-    fs >> header;
-    fileGameType = header.gameType;
-
-    size_t offset = fs.tell();
-    fs.close();
-
-    Settings & conf = Settings::Get();
-    if ( ( conf.GameType() & fileGameType ) == 0 ) {
-        fheroes2::showMessage( fheroes2::Text( _( "Warning" ), fheroes2::FontType::normalYellow() ),
-                               fheroes2::Text( _( "This file contains a save with an invalid game type." ), fheroes2::FontType::normalWhite() ), Dialog::OK );
-        return fheroes2::GameMode::CANCEL;
-    }
-
-    ZStreamFile fz;
-    fz.setbigendian( true );
-
-    if ( !fz.read( filePath, offset ) ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, ", uncompress: error" )
-        return fheroes2::GameMode::CANCEL;
-    }
-
-    if ( ( header.status & HeaderSAV::IS_PRICE_OF_LOYALTY_MAP ) && !conf.isPriceOfLoyaltySupported() ) {
-        fheroes2::showStandardTextMessage(
-            _( "Warning" ), _( "This file was saved for a \"The Price of Loyalty\" map, but the corresponding game assets have not been provided to the engine." ),
-            Dialog::OK );
-        return fheroes2::GameMode::CANCEL;
-    }
-
-    fz >> binver;
-
-    // check version: false
-    if ( binver > CURRENT_FORMAT_VERSION || binver < LAST_SUPPORTED_FORMAT_VERSION ) {
+    if ( saveFileVersion > CURRENT_FORMAT_VERSION || saveFileVersion < LAST_SUPPORTED_FORMAT_VERSION ) {
         std::string errorMessage( _( "Unsupported save format: " ) );
-        errorMessage += std::to_string( binver );
+        errorMessage += std::to_string( saveFileVersion );
         errorMessage += ".\n";
         errorMessage += _( "Current game version: " );
         errorMessage += std::to_string( CURRENT_FORMAT_VERSION );
@@ -223,14 +196,56 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
         errorMessage += std::to_string( LAST_SUPPORTED_FORMAT_VERSION );
         errorMessage += ".\n";
 
-        fheroes2::showMessage( fheroes2::Text( _( "Error" ), fheroes2::FontType::normalYellow() ), fheroes2::Text( errorMessage, fheroes2::FontType::normalWhite() ),
-                               Dialog::OK );
+        fheroes2::showStandardTextMessage( _( "Error" ), errorMessage, Dialog::OK );
 
         return fheroes2::GameMode::CANCEL;
     }
 
-    DEBUG_LOG( DBG_GAME, DBG_TRACE, "load version: " << binver )
-    SetVersionOfCurrentSaveFile( binver );
+    SetVersionOfCurrentSaveFile( saveFileVersion );
+
+    HeaderSAV header;
+    fs >> header;
+
+    size_t offset = fs.tell();
+    fs.close();
+
+    Settings & conf = Settings::Get();
+    if ( ( conf.GameType() & header.gameType ) == 0 ) {
+        fheroes2::showStandardTextMessage( _( "Error" ), _( "This file contains a save with an invalid game type." ), Dialog::OK );
+
+        return fheroes2::GameMode::CANCEL;
+    }
+
+    ZStreamFile fz;
+    fz.setbigendian( true );
+
+    if ( !fz.read( filePath, offset ) ) {
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "Error uncompressing the file " << filePath )
+
+        showGenericErrorMessage();
+
+        return fheroes2::GameMode::CANCEL;
+    }
+
+    if ( ( header.status & HeaderSAV::IS_PRICE_OF_LOYALTY_MAP ) && !conf.isPriceOfLoyaltySupported() ) {
+        fheroes2::showStandardTextMessage(
+            _( "Error" ), _( "This file was saved for a \"The Price of Loyalty\" map, but the corresponding game assets have not been provided to the engine." ),
+            Dialog::OK );
+
+        return fheroes2::GameMode::CANCEL;
+    }
+
+    uint16_t zippedSaveFileVersion = 0;
+    fz >> zippedSaveFileVersion;
+
+    if ( zippedSaveFileVersion != saveFileVersion ) {
+        DEBUG_LOG( DBG_GAME, DBG_WARN,
+                   "In the file " << filePath << " the file version " << saveFileVersion << " does not match the zipped one " << zippedSaveFileVersion )
+
+        showGenericErrorMessage();
+
+        return fheroes2::GameMode::CANCEL;
+    }
 
     fz >> World::Get() >> conf >> GameOver::Result::Get();
 
@@ -244,8 +259,7 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
         warningMessage.append( fheroes2::getLanguageName( fheroes2::getLanguageFromAbbreviation( conf.getGameLanguage() ) ) );
         warningMessage += "'.";
 
-        fheroes2::showMessage( fheroes2::Text( _( "Warning" ), fheroes2::FontType::normalYellow() ), fheroes2::Text( warningMessage, fheroes2::FontType::normalWhite() ),
-                               Dialog::OK );
+        fheroes2::showStandardTextMessage( _( "Warning" ), warningMessage, Dialog::OK );
     }
 
     fheroes2::GameMode returnValue = fheroes2::GameMode::START_GAME;
@@ -260,15 +274,16 @@ fheroes2::GameMode Game::Load( const std::string & filePath )
         }
     }
 
-    uint16_t end_check = 0;
-    fz >> end_check;
+    uint16_t endOfDataMarker = 0;
+    fz >> endOfDataMarker;
 
-    if ( fz.fail() || ( end_check != SAV2ID2 && end_check != SAV2ID3 ) ) {
-        DEBUG_LOG( DBG_GAME, DBG_WARN, "invalid load file: " << filePath )
+    if ( fz.fail() || endOfDataMarker != SAV2ID3 ) {
+        DEBUG_LOG( DBG_GAME, DBG_WARN, "File " << filePath << " is corrupted" )
+
+        showGenericErrorMessage();
+
         return fheroes2::GameMode::CANCEL;
     }
-
-    SetVersionOfCurrentSaveFile( CURRENT_FORMAT_VERSION );
 
     Game::SetLastSaveName( filePath );
     conf.SetGameType( conf.GameType() | Game::TYPE_LOADFILE );
