@@ -454,7 +454,7 @@ namespace Translation
         return current ? current->ngettext( str, 0 ) : stripContext( str );
     }
 
-    const char * ngettext( const char * str, const char * plural, size_t n )
+    const char * ngettext( const char * str, const char * plural, const size_t n )
     {
         if ( current )
             switch ( current->locale ) {
