@@ -284,7 +284,7 @@ namespace AI
                         continue;
                     }
 
-                    const int32_t tradeCost = fheroes2::getTradeCost( marketplaceCount, res, missingRes );
+                    const int32_t tradeCost  = fheroes2::getTradeCost( marketplaceCount, res, missingRes );
                     assert( tradeCost > 0 );
 
                     const int32_t potentialRevenue = ( missingRes == Resource::GOLD ? resAmount * tradeCost : resAmount / tradeCost );
