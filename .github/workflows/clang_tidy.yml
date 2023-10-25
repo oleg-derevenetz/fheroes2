@@ -20,6 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
+        ref: ${{ github.event.pull_request.head.ref }}
         fetch-depth: 50
     - name: Install dependencies and clang-tidy
       run: |
