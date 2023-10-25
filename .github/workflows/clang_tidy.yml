@@ -41,8 +41,6 @@ jobs:
     - name: Save PR metadata
       run: |
         echo "${{ github.event.number }}" > clang-tidy-result/pr-id.txt
-        echo "${{ github.event.pull_request.head.repo.full_name }}" > clang-tidy-result/pr-head-repo.txt
-        echo "${{ github.event.pull_request.head.ref }}" > clang-tidy-result/pr-head-ref.txt
     - uses: actions/upload-artifact@v3
       with:
         name: clang-tidy-result
