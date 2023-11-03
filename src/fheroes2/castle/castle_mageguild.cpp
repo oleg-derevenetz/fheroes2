@@ -130,15 +130,23 @@ void RowSpells::Redraw( fheroes2::Image & output )
             text.draw( dst.x + 18, dst.y + 57, 78, fheroes2::Display::instance() );
         }
     }
-    for ( std::vector<fheroes2::Rect>::iterator it = coords.begin(); it != coords.end(); ++it ) {
-        const fheroes2::Rect & dst = ( *it );
-        fheroes2::Blit( roll_show, output, dst.x, dst.y );
+}
+
+bool RowSpells::QueueEventProcessing()
+{
+    LocalEvent & le = LocalEvent::Get();
+
+    const int32_t index = GetRectIndex( coords, le.GetMouseCursor() );
+
+    if ( 0 <= index && ( le.MouseClickLeft() || le.MousePressRight() ) ) {
+        const Spell & spell = spells[index];
+
+        if ( spell != Spell::NONE ) {
+            fheroes2::SpellDialogElement( spell, nullptr ).showPopup( le.MousePressRight() ? Dialog::ZERO : Dialog::OK );
+        }
     }
-    for ( std::vector<fheroes2::Rect>::iterator it = coords.begin(); it != coords.end(); ++it ) {
-        const int i = 0;
-        const fheroes2::Rect & dst = ( *it );
-        fheroes2::Blit( roll_show, output, dst.x, dst.y );
-    }
+
+    return 0 <= index;
 }
 
 void Castle::OpenMageGuild( const Heroes * hero ) const
@@ -257,4 +265,3 @@ void Castle::OpenMageGuild( const Heroes * hero ) const
         }
     }
 }
-bool RowSpells::QueueEventProcessing() {for ( std::vector<fheroes2::Rect>::iterator it = coords.begin(); it != coords.end(); ++it ) {const fheroes2::Rect & dst = ( *it );fheroes2::Blit( roll_show, output, dst.x, dst.y );}}
