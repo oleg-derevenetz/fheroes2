@@ -59,7 +59,7 @@ AGG::AGGInitializer::AGGInitializer()
     throw std::logic_error( "No AGG data files found." );
 }
 
-bool AGG::AGGInitializer::init()
+bool  AGG::AGGInitializer::init()
 {
     const ListFiles aggFileNames = Settings::FindFiles( "data", ".agg", false );
     if ( aggFileNames.empty() ) {
