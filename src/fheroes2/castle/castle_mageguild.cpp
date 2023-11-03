@@ -130,6 +130,10 @@ void RowSpells::Redraw( fheroes2::Image & output )
             text.draw( dst.x + 18, dst.y + 57, 78, fheroes2::Display::instance() );
         }
     }
+    for ( std::vector<fheroes2::Rect>::iterator it = coords.begin(); it != coords.end(); ++it ) {
+        const fheroes2::Rect & dst = ( *it );
+        fheroes2::Blit( roll_show, output, dst.x, dst.y );
+    }
 }
 
 bool RowSpells::QueueEventProcessing()
