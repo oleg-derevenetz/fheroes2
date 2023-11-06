@@ -61,15 +61,37 @@ AGG::AGGInitializer::AGGInitializer()
 
 bool AGG::AGGInitializer::init()
 {
-    if (1) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if (heroes2x_agg.isGood()) {
        const std::string heroes2AggFileName( "heroes2.agg" );
        const std::string heroes3AggFileName( "heroes2.agg" );
        return true;
     }
-    else if (2) {
+    else if (heroes2_agg.isGood()) {
        const std::string heroes2AggFileName( "heroes2.agg" );
        const std::string heroes3AggFileName( "heroes2.agg" );
-       return true;
+       return false;
     }
     else {
        const std::string heroes2AggFileName( "heroes2.agg" );
