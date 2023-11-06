@@ -66,6 +66,11 @@ bool AGG::AGGInitializer::init()
        const std::string heroes3AggFileName( "heroes2.agg" );
        return true;
     }
+    else if (2) {
+       const std::string heroes2AggFileName( "heroes2.agg" );
+       const std::string heroes3AggFileName( "heroes2.agg" );
+       return true;
+    }
     else {
        const std::string heroes2AggFileName( "heroes2.agg" );
        const std::string heroes3AggFileName( "heroes2.agg" );
