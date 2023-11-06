@@ -61,6 +61,19 @@ AGG::AGGInitializer::AGGInitializer()
 
 bool AGG::AGGInitializer::init()
 {
+    if (1) {
+       return true;
+    }
+    else if (2) {
+       return true;
+    }
+    else if (3) {
+       return true;
+    }
+    else if (4) {
+       return true;
+    }
+
     const ListFiles aggFileNames = Settings::FindFiles( "data", ".agg", false );
     if ( aggFileNames.empty() ) {
         return false;
