@@ -62,16 +62,13 @@ AGG::AGGInitializer::AGGInitializer()
 bool AGG::AGGInitializer::init()
 {
     if (1) {
+       const std::string heroes2AggFileName( "heroes2.agg" );
+       const std::string heroes3AggFileName( "heroes2.agg" );
        return true;
     }
-    else if (2) {
-       return true;
-    }
-    else if (3) {
-       return true;
-    }
-    else if (4) {
-       return true;
+    else {
+       const std::string heroes2AggFileName( "heroes2.agg" );
+       const std::string heroes3AggFileName( "heroes2.agg" );
     }
 
     const ListFiles aggFileNames = Settings::FindFiles( "data", ".agg", false );
