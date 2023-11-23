@@ -49,7 +49,8 @@ namespace fheroes2
 }
 
 struct Test {
-    int i, j;
+    int i, j, k;
     Test()
         : j{0}
+        , k{0}
         , i{0}{}};
