@@ -47,3 +47,9 @@ namespace fheroes2
         void updateLanguageDependentResources( const SupportedLanguage language, const bool loadOriginalAlphabet );
     }
 }
+
+struct Test {
+    int i, j;
+    Test()
+        : j{0}
+        , i{0}{}};
