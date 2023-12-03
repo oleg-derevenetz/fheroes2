@@ -46,7 +46,7 @@ namespace Maps
     struct FileInfo
     {
     public:
-        FileInfo() : allowNormalVictory{false}
+        FileInfo()
         {
             Reset();
         }
