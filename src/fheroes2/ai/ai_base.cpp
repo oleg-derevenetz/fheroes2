@@ -41,7 +41,7 @@ namespace AI
     {
         switch ( _personality ) {
         case WARRIOR:
-            return _( "Warrior" );
+            return _( "WarriorXXX" );
         case BUILDER:
             return _( "Builder" );
         case EXPLORER:
