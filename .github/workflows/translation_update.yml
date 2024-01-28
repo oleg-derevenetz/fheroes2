@@ -3,7 +3,9 @@ name: Translation update
 on:
   workflow_call:
 
-permissions: {}
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   translation:
