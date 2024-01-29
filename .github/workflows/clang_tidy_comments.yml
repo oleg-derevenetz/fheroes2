@@ -54,7 +54,7 @@ jobs:
           }
           exportVar("PR_ID", "pr-id.txt", /^[0-9]+$/);
           exportVar("PR_HEAD_REPO", "pr-head-repo.txt", /^[!#-~]+$/);
-          exportVar("PR_HEAD_SHA", "pr-head-sha.txt", /^[0-9A-Fa-f]+$/);
+          exportVar("PR_HEAD_SHA", "pr-head-sha.txt", /^[0-9A-Fa-f.x]+$/);
     - uses: actions/checkout@v4
       with:
         repository: ${{ env.PR_HEAD_REPO }}
