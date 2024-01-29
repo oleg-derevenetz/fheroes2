@@ -35,13 +35,18 @@ jobs:
           });
           let fs = require("fs");
           fs.writeFileSync("${{ github.workspace }}/clang-tidy-result.zip", Buffer.from(download.data));
-    - name: Set environment variables
+    - name: Extract analysis results
       run: |
         mkdir clang-tidy-result
         unzip -j clang-tidy-result.zip -d clang-tidy-result
-        echo "PR_ID=$(cat clang-tidy-result/pr-id.txt)" >> "$GITHUB_ENV"
-        echo "PR_HEAD_REPO=$(cat clang-tidy-result/pr-head-repo.txt)" >> "$GITHUB_ENV"
-        echo "PR_HEAD_SHA=$(cat clang-tidy-result/pr-head-sha.txt)" >> "$GITHUB_ENV"
+    - name: Set environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          let fs = require("fs");
+          core.exportVariable("PR_ID", fs.readFileSync("${{ github.workspace }}/clang-tidy-result/pr-id.txt"));
+          core.exportVariable("PR_HEAD_REPO", fs.readFileSync("${{ github.workspace }}/clang-tidy-result/pr-head-repo.txt"));
+          core.exportVariable("PR_HEAD_SHA", fs.readFileSync("${{ github.workspace }}/clang-tidy-result/pr-head-sha.txt"));
     - uses: actions/checkout@v4
       with:
         repository: ${{ env.PR_HEAD_REPO }}
