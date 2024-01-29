@@ -53,7 +53,7 @@ jobs:
               core.exportVariable(varName, val);
           }
           exportVar("PR_ID", "pr-id.txt", /^[0-9]+$/);
-          exportVar("PR_HEAD_REPO", "pr-head-repo.txt", /^[!#-~]+$/);
+          exportVar("PR_HEAD_REPO", "pr-head-repo.txt", /^[ !#-~]+$/);
           exportVar("PR_HEAD_SHA", "pr-head-sha.txt", /^[0-9A-Fa-f]+$/);
     - uses: actions/checkout@v4
       with:
