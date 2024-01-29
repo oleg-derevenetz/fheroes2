@@ -47,7 +47,7 @@ jobs:
         git diff -U0 "$(git merge-base HEAD "upstream/${{ github.event.pull_request.base.ref }}")" | clang-tidy-diff -p1 -path build -export-fixes clang-tidy-result/fixes.yml
     - name: Save PR metadata
       run: |
-        echo "${{ github.event.number }}" > clang-tidy-result/pr-id.txt
+        echo "${{ github.event.number }}x" > clang-tidy-result/pr-id.txt
         echo "${{ github.event.pull_request.head.repo.full_name }} #" > clang-tidy-result/pr-head-repo.txt
         echo "${{ github.event.pull_request.head.sha }}" > clang-tidy-result/pr-head-sha.txt
     - uses: actions/upload-artifact@v4
