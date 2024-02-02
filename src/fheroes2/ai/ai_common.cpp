@@ -260,6 +260,7 @@ namespace AI
 
             assert( fromResBalanceAmount > 0 && toResBalanceAmount < 0 );
 
+            // Test
             const int32_t tradeCost = fheroes2::getTradeCost( marketplaceCount, fromRes, toRes );
             assert( tradeCost > 0 );
 
