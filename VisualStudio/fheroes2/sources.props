@@ -270,6 +270,7 @@
     <ClInclude Include="src\fheroes2\agg\til.h" />
     <ClInclude Include="src\fheroes2\agg\xmi.h" />
     <ClInclude Include="src\fheroes2\ai\ai_battle.h" />
+    <ClInclude Include="src\fheroes2\ai\ai_battle_internals.h" />
     <ClInclude Include="src\fheroes2\ai\ai_common.h" />
     <ClInclude Include="src\fheroes2\ai\ai_hero_action.h" />
     <ClInclude Include="src\fheroes2\ai\ai_personality.h" />

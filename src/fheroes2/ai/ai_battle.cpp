@@ -39,6 +39,7 @@
 #include <utility>
 #include <vector>
 
+#include "ai_battle_internals.h"
 #include "artifact.h"
 #include "artifact_info.h"
 #include "battle.h"

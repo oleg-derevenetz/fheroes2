@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "ai_battle.h"
+#include "ai_battle_internals.h"
 #include "army_troop.h"
 #include "artifact.h"
 #include "artifact_info.h"

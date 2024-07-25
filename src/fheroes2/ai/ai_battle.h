@@ -38,35 +38,9 @@ namespace Battle
 
 namespace AI
 {
-    struct BattleTargetPair
-    {
-        int cell = -1;
-        const Battle::Unit * unit = nullptr;
-    };
-
-    struct SpellSelection
-    {
-        int spellID = -1;
-        int32_t cell = -1;
-        double value = 0.0;
-    };
-
-    struct SpellcastOutcome
-    {
-        int32_t cell = -1;
-        double value = 0.0;
-
-        void updateOutcome( const double potentialValue, const int32_t targetCell, const bool isMassEffect = false )
-        {
-            if ( isMassEffect ) {
-                value += potentialValue;
-            }
-            else if ( potentialValue > value ) {
-                value = potentialValue;
-                cell = targetCell;
-            }
-        }
-    };
+    struct BattleTargetPair;
+    struct SpellSelection;
+    struct SpellcastOutcome;
 
     class BattlePlanner
     {
