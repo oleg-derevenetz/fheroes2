@@ -20,8 +20,6 @@
 
 #pragma once
 
-#include <cstdint>
-
 namespace Battle
 {
     class Unit;
