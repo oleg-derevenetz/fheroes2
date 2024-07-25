@@ -20,6 +20,12 @@
 
 #pragma once
 
+#include <cassert>
+#include <cstdint>
+
+#include "color.h"
+#include "world_pathfinding.h"
+
 class Castle;
 class Heroes;
 
