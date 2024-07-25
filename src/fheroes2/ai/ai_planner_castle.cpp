@@ -27,6 +27,7 @@
 
 #include "ai_common.h"
 #include "ai_planner.h"
+#include "ai_planner_internals.h"
 #include "army.h"
 #include "castle.h"
 #include "difficulty.h"

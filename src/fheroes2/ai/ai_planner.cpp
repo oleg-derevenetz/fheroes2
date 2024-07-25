@@ -28,6 +28,7 @@
 #include <utility>
 #include <vector>
 
+#include "ai_planner_internals.h"
 #include "army.h"
 #include "heroes.h"
 #include "kingdom.h"

@@ -20,7 +20,14 @@
 
 #pragma once
 
+#include <cassert>
+#include <cstdint>
+
+#include "color.h"
 #include "world_pathfinding.h"
+
+class Castle;
+class Heroes;
 
 namespace AI
 {
@@ -53,5 +60,60 @@ namespace AI
 
         const double _originalMinimalArmyStrengthAdvantage;
         const double _originalSpellPointsReserveRatio;
+    };
+
+    struct AICastle
+    {
+        Castle * castle = nullptr;
+        bool underThreat = false;
+        int safetyFactor = 0;
+        int buildingValue = 0;
+
+        AICastle( Castle * inCastle, bool inThreat, int inSafety, int inValue )
+            : castle( inCastle )
+            , underThreat( inThreat )
+            , safetyFactor( inSafety )
+            , buildingValue( inValue )
+        {
+            assert( castle != nullptr );
+        }
+    };
+
+    struct EnemyArmy
+    {
+        EnemyArmy() = default;
+
+        EnemyArmy( const int32_t index_, const int color_, const Heroes * hero_, const double strength_, const uint32_t movePoints_ )
+            : index( index_ )
+            , color( color_ )
+            , hero( hero_ )
+            , strength( strength_ )
+            , movePoints( movePoints_ )
+        {}
+
+        int32_t index{ -1 };
+        int color{ Color::NONE };
+        const Heroes * hero{ nullptr };
+        double strength{ 0 };
+        uint32_t movePoints{ 0 };
+    };
+
+    struct HeroToMove
+    {
+        Heroes * hero = nullptr;
+        int patrolCenter = -1;
+        uint32_t patrolDistance = 0;
+    };
+
+    // TODO: this structure is not being updated during AI heroes' actions.
+    struct RegionStats
+    {
+        bool evaluated = false;
+        double highestThreat = -1;
+        int friendlyHeroes = 0;
+        int friendlyCastles = 0;
+        int enemyCastles = 0;
+        int safetyFactor = 0;
+        int spellLevel = 2;
     };
 }

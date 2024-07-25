@@ -21,14 +21,12 @@
 #pragma once
 
 #include <array>
-#include <cassert>
 #include <cstdint>
 #include <map>
 #include <set>
 #include <utility>
 #include <vector>
 
-#include "color.h"
 #include "mp2.h"
 #include "pairs.h"
 #include "resource.h"
@@ -49,6 +47,11 @@ namespace Maps
 
 namespace AI
 {
+    struct AICastle;
+    struct EnemyArmy;
+    struct HeroToMove;
+    struct RegionStats;
+
     // Although AI heroes are capable to find their own tasks strategic AI should be able to focus them on most critical tasks
     enum class PriorityTaskType : int
     {
@@ -60,35 +63,6 @@ namespace AI
 
         // Target must be a friendly castle or hero. AI with such priority set should focus on bringing more troops to the target.
         REINFORCE
-    };
-
-    // TODO: this structure is not being updated during AI heroes' actions.
-    struct RegionStats
-    {
-        bool evaluated = false;
-        double highestThreat = -1;
-        int friendlyHeroes = 0;
-        int friendlyCastles = 0;
-        int enemyCastles = 0;
-        int safetyFactor = 0;
-        int spellLevel = 2;
-    };
-
-    struct AICastle
-    {
-        Castle * castle = nullptr;
-        bool underThreat = false;
-        int safetyFactor = 0;
-        int buildingValue = 0;
-
-        AICastle( Castle * inCastle, bool inThreat, int inSafety, int inValue )
-            : castle( inCastle )
-            , underThreat( inThreat )
-            , safetyFactor( inSafety )
-            , buildingValue( inValue )
-        {
-            assert( castle != nullptr );
-        }
     };
 
     struct BudgetEntry
@@ -108,32 +82,6 @@ namespace AI
             priority = false;
             recurringCost = false;
         }
-    };
-
-    struct HeroToMove
-    {
-        Heroes * hero = nullptr;
-        int patrolCenter = -1;
-        uint32_t patrolDistance = 0;
-    };
-
-    struct EnemyArmy
-    {
-        EnemyArmy() = default;
-
-        EnemyArmy( const int32_t index_, const int color_, const Heroes * hero_, const double strength_, const uint32_t movePoints_ )
-            : index( index_ )
-            , color( color_ )
-            , hero( hero_ )
-            , strength( strength_ )
-            , movePoints( movePoints_ )
-        {}
-
-        int32_t index{ -1 };
-        int color{ Color::NONE };
-        const Heroes * hero{ nullptr };
-        double strength{ 0 };
-        uint32_t movePoints{ 0 };
     };
 
     struct PriorityTask
