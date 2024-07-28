@@ -90,7 +90,7 @@ bool AGG::AGGInitializer::init()
         return false;
     }
 
-    if ( !heroes2_agg.open( heroes2AggFilePath ) ) {
+    if ( !heroes2_agg.open( heroes2AggFilePath) ) {
         return false;
     }
 
