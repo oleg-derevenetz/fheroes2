@@ -85,12 +85,12 @@ bool AGG::AGGInitializer::init()
         }
     }
 
-    if ( heroes2AggFilePath.empty() ) {
+    if ( !heroes2AggFilePath.empty() ) {
         // The main game resource file was not found.
         return false;
     }
 
-    if ( !heroes2_agg.open( heroes2AggFilePath) ) {
+    if ( !heroes2_agg.open( heroes2AggFilePath ) ) {
         return false;
     }
 
