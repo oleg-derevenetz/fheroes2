@@ -647,42 +647,42 @@ void Battle::Arena::TowerAction( const Tower & twr )
 
 void Battle::Arena::CatapultAction()
 {
-    if ( _catapult ) {
-        uint32_t shots = _catapult->GetShots();
-
-        std::map<CastleDefenseElement, uint32_t> stateOfCatapultTargets
-            = { { CastleDefenseElement::WALL1, GetCastleTargetValue( CastleDefenseElement::WALL1 ) },
-                { CastleDefenseElement::WALL2, GetCastleTargetValue( CastleDefenseElement::WALL2 ) },
-                { CastleDefenseElement::WALL3, GetCastleTargetValue( CastleDefenseElement::WALL3 ) },
-                { CastleDefenseElement::WALL4, GetCastleTargetValue( CastleDefenseElement::WALL4 ) },
-                { CastleDefenseElement::TOWER1, GetCastleTargetValue( CastleDefenseElement::TOWER1 ) },
-                { CastleDefenseElement::TOWER2, GetCastleTargetValue( CastleDefenseElement::TOWER2 ) },
-                { CastleDefenseElement::BRIDGE, GetCastleTargetValue( CastleDefenseElement::BRIDGE ) },
-                { CastleDefenseElement::CENTRAL_TOWER, GetCastleTargetValue( CastleDefenseElement::CENTRAL_TOWER ) } };
-
-        Command cmd( Command::CATAPULT );
-
-        cmd << shots;
-
-        while ( shots-- ) {
-            const CastleDefenseElement target = Catapult::GetTarget( stateOfCatapultTargets, _randomGenerator );
-            const uint32_t damage = std::min( _catapult->GetDamage( _randomGenerator ), stateOfCatapultTargets[target] );
-            const bool hit = _catapult->IsNextShotHit( _randomGenerator );
-
-            using TargetUnderlyingType = std::underlying_type_t<decltype( target )>;
-
-            cmd << static_cast<TargetUnderlyingType>( target ) << damage << ( hit ? 1 : 0 );
-
-            if ( hit ) {
-                stateOfCatapultTargets[target] -= damage;
-            }
-        }
-
-        // Preserve the order of shots - command arguments will be extracted in reverse order
-        std::reverse( cmd.begin(), cmd.end() );
-
-        ApplyAction( cmd );
+    if ( !_catapult ) {
+        return;
     }
+
+    uint32_t shots = _catapult->GetShots();
+
+    std::map<CastleDefenseElement, uint32_t> stateOfCatapultTargets;
+    for ( const CastleDefenseElement target : Catapult::getAllowedTargets() ) {
+        const auto [dummy, inserted] = stateOfCatapultTargets.try_emplace( target, getCastleDefenseElementCondition( target ) );
+        if ( !inserted ) {
+            assert( 0 );
+        }
+    }
+
+    Command cmd( Command::CATAPULT );
+
+    cmd << shots;
+
+    while ( shots-- ) {
+        const CastleDefenseElement target = Catapult::GetTarget( stateOfCatapultTargets, _randomGenerator );
+        const uint32_t damage = std::min( _catapult->GetDamage( _randomGenerator ), stateOfCatapultTargets[target] );
+        const bool hit = _catapult->IsNextShotHit( _randomGenerator );
+
+        using TargetUnderlyingType = std::underlying_type_t<decltype( target )>;
+
+        cmd << static_cast<TargetUnderlyingType>( target ) << damage << ( hit ? 1 : 0 );
+
+        if ( hit ) {
+            stateOfCatapultTargets[target] -= damage;
+        }
+    }
+
+    // Preserve the order of shots - command arguments will be extracted in reverse order
+    std::reverse( cmd.begin(), cmd.end() );
+
+    ApplyAction( cmd );
 }
 
 Battle::Indexes Battle::Arena::GetPath( const Unit & unit, const Position & position )
@@ -985,144 +985,210 @@ Battle::Indexes Battle::Arena::GraveyardOccupiedCells() const
     return graveyard.GetOccupiedCells();
 }
 
-void Battle::Arena::setCastleTargetValue( const CastleDefenseElement target, const int value )
+void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElement target, const int damage )
 {
+    assert( castle != nullptr );
+
     switch ( target ) {
+    // Sections of the castle wall can be completely destroyed and it will be possible to pass through the corresponding cells.
     case CastleDefenseElement::WALL1:
-        board[CASTLE_FIRST_TOP_WALL_POS].SetObject( value );
-        break;
     case CastleDefenseElement::WALL2:
-        board[CASTLE_SECOND_TOP_WALL_POS].SetObject( value );
-        break;
     case CastleDefenseElement::WALL3:
-        board[CASTLE_THIRD_TOP_WALL_POS].SetObject( value );
+    case CastleDefenseElement::WALL4: {
+        const size_t position = getPositionOfCastleDefenseElement( target );
+        const int condition = board[position].GetObject();
+
+        assert( damage > 0 && damage <= condition );
+
+        board[position].SetObject( condition - damage );
         break;
-    case CastleDefenseElement::WALL4:
-        board[CASTLE_FOURTH_TOP_WALL_POS].SetObject( value );
-        break;
+    }
+
+    // Tete-de-pont towers can be damaged, but not fully demolished (it is still impossible to pass through the corresponding cells).
     case CastleDefenseElement::TOP_BRIDGE_TOWER:
-        // Tower can be damaged by the Earthquake spell, but not fully demolished.
-        assert( value > 0 );
-        board[CASTLE_TOP_GATE_TOWER_POS].SetObject( value );
-        break;
-    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER:
-        // Tower can be damaged by the Earthquake spell, but not fully demolished.
-        assert( value > 0 );
-        board[CASTLE_BOTTOM_GATE_TOWER_POS].SetObject( value );
-        break;
+    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER: {
+        const size_t position = getPositionOfCastleDefenseElement( target );
+        const int condition = board[position].GetObject();
 
+        assert( damage == 1 && damage < condition );
+
+        board[position].SetObject( condition - damage );
+        break;
+    }
+
+    // Wall towers (with or without built turret) can be damaged (and they will stop shooting in this case), but not fully demolished
+    // (it is still impossible to pass through the corresponding cells).
     case CastleDefenseElement::TOWER1:
-        if ( _towers[0] ) {
-            if ( _towers[0]->isValid() ) {
-                _towers[0]->SetDestroy();
-            }
-        }
-        else {
-            // Tower without built turret can be damaged by the Earthquake spell, but not fully demolished.
-            assert( value > 0 );
-            board[CASTLE_TOP_ARCHER_TOWER_POS].SetObject( value );
-        }
-        break;
     case CastleDefenseElement::TOWER2:
-        if ( _towers[2] ) {
-            if ( _towers[2]->isValid() ) {
-                _towers[2]->SetDestroy();
+    case CastleDefenseElement::CENTRAL_TOWER: {
+        const size_t towerIdx = [target]() -> size_t {
+            switch ( target ) {
+            case CastleDefenseElement::TOWER1:
+                return 0;
+            case CastleDefenseElement::TOWER2:
+                return 2;
+            case CastleDefenseElement::CENTRAL_TOWER:
+                return 1;
+            default:
+                assert( 0 );
+                break;
             }
-        }
-        else {
-            // Tower without built turret can be damaged by the Earthquake spell, but not fully demolished.
-            assert( value > 0 );
-            board[CASTLE_BOTTOM_ARCHER_TOWER_POS].SetObject( value );
-        }
-        break;
-    case CastleDefenseElement::CENTRAL_TOWER:
-        if ( _towers[1] && _towers[1]->isValid() ) {
-            _towers[1]->SetDestroy();
-        }
-        break;
 
-    case CastleDefenseElement::BRIDGE:
-        if ( _bridge->isValid() ) {
-            _bridge->SetDestroyed();
+            return 0;
+        }();
+
+        assert( ( [this, target, damage, towerIdx]() {
+            if ( damage != 1 ) {
+                return false;
+            }
+
+            if ( target == CastleDefenseElement::CENTRAL_TOWER ) {
+                return _towers[towerIdx] && _towers[towerIdx]->isValid();
+            }
+
+            const size_t position = getPositionOfCastleDefenseElement( target );
+            const int condition = board[position].GetObject();
+
+            if ( damage >= condition ) {
+                return false;
+            }
+
+            if ( !_towers[towerIdx] || _towers[towerIdx]->isValid() ) {
+                return condition == 2;
+            }
+
+            return condition == 1;
+        }() ) );
+
+        if ( _towers[towerIdx] ) {
+            _towers[towerIdx]->SetDestroyed();
+            break;
         }
+
+        const size_t position = getPositionOfCastleDefenseElement( target );
+        const int condition = board[position].GetObject();
+
+        board[position].SetObject( condition - damage );
         break;
+    }
+
+    // Castle bridge can be completely destroyed and it will be possible to pass through the corresponding cell.
+    case CastleDefenseElement::BRIDGE: {
+        assert( damage == 1 && _bridge && _bridge->isValid() );
+
+        _bridge->SetDestroyed();
+        break;
+    }
 
     default:
         break;
     }
 }
 
-uint32_t Battle::Arena::GetCastleTargetValue( const CastleDefenseElement target ) const
+int Battle::Arena::getCastleDefenseElementCondition( const CastleDefenseElement target ) const
 {
+    assert( castle != nullptr );
+
     switch ( target ) {
     case CastleDefenseElement::WALL1:
-        return board[CASTLE_FIRST_TOP_WALL_POS].GetObject();
     case CastleDefenseElement::WALL2:
-        return board[CASTLE_SECOND_TOP_WALL_POS].GetObject();
     case CastleDefenseElement::WALL3:
-        return board[CASTLE_THIRD_TOP_WALL_POS].GetObject();
-    case CastleDefenseElement::WALL4:
-        return board[CASTLE_FOURTH_TOP_WALL_POS].GetObject();
+    case CastleDefenseElement::WALL4: {
+        const size_t position = getPositionOfCastleDefenseElement( target );
+        const int condition = board[position].GetObject();
+
+        assert( condition >= 0 );
+
+        return condition;
+    }
+
     case CastleDefenseElement::TOP_BRIDGE_TOWER:
-        return board[CASTLE_TOP_GATE_TOWER_POS].GetObject();
-    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER:
-        return board[CASTLE_BOTTOM_GATE_TOWER_POS].GetObject();
+    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER: {
+        const size_t position = getPositionOfCastleDefenseElement( target );
+        const int condition = board[position].GetObject();
+
+        assert( condition == 1 || condition == 2 );
+
+        return condition - 1;
+    }
 
     case CastleDefenseElement::TOWER1:
-        return _towers[0] && _towers[0]->isValid() ? 1 : 0;
     case CastleDefenseElement::TOWER2:
-        return _towers[2] && _towers[2]->isValid() ? 1 : 0;
-    case CastleDefenseElement::CENTRAL_TOWER:
-        return _towers[1] && _towers[1]->isValid() ? 1 : 0;
+    case CastleDefenseElement::CENTRAL_TOWER: {
+        const size_t towerIdx = [target]() -> size_t {
+            switch ( target ) {
+            case CastleDefenseElement::TOWER1:
+                return 0;
+            case CastleDefenseElement::TOWER2:
+                return 2;
+            case CastleDefenseElement::CENTRAL_TOWER:
+                return 1;
+            default:
+                assert( 0 );
+                break;
+            }
 
-    case CastleDefenseElement::BRIDGE:
+            return 0;
+        }();
+
+        assert( ( [this, target, towerIdx]() {
+            if ( target == CastleDefenseElement::CENTRAL_TOWER ) {
+                return true;
+            }
+
+            const size_t position = getPositionOfCastleDefenseElement( target );
+            const int condition = board[position].GetObject();
+
+            if ( !_towers[towerIdx] || _towers[towerIdx]->isValid() ) {
+                return condition == 2;
+            }
+
+            return condition == 1;
+        }() ) );
+
+        return _towers[towerIdx] && _towers[towerIdx]->isValid() ? 1 : 0;
+    }
+
+    case CastleDefenseElement::BRIDGE: {
+        assert( _bridge );
+
         return _bridge->isValid() ? 1 : 0;
+    }
 
     default:
         break;
     }
+
     return 0;
 }
 
-Battle::CastleDefenseElement Battle::Arena::getEarthQuakeTarget( const size_t position ) const
+size_t Battle::Arena::getPositionOfCastleDefenseElement( const CastleDefenseElement element )
 {
-    if ( board[position].GetObject() == 0 ) {
-        return CastleDefenseElement::NONE;
-    }
-
-    switch ( position ) {
-    case CASTLE_GATE_POS:
-        if ( _bridge && _bridge->isValid() ) {
-            return CastleDefenseElement::BRIDGE;
-        }
-        break;
-    case CASTLE_TOP_ARCHER_TOWER_POS:
-        if ( board[position].GetObject() > 1 ) {
-            return CastleDefenseElement::TOWER1;
-        }
-        break;
-    case CASTLE_BOTTOM_ARCHER_TOWER_POS:
-        if ( board[position].GetObject() > 1 ) {
-            return CastleDefenseElement::TOWER2;
-        }
-        break;
-    case CASTLE_FIRST_TOP_WALL_POS:
-        return CastleDefenseElement::WALL1;
-    case CASTLE_SECOND_TOP_WALL_POS:
-        return CastleDefenseElement::WALL2;
-    case CASTLE_THIRD_TOP_WALL_POS:
-        return CastleDefenseElement::WALL3;
-    case CASTLE_FOURTH_TOP_WALL_POS:
-        return CastleDefenseElement::WALL4;
-    case CASTLE_TOP_GATE_TOWER_POS:
-        return CastleDefenseElement::TOP_BRIDGE_TOWER;
-    case CASTLE_BOTTOM_GATE_TOWER_POS:
-        return CastleDefenseElement::BOTTOM_BRIDGE_TOWER;
+    switch ( element ) {
+    case CastleDefenseElement::BRIDGE:
+        return CASTLE_GATE_POS;
+    case CastleDefenseElement::TOWER1:
+        return CASTLE_TOP_ARCHER_TOWER_POS;
+    case CastleDefenseElement::TOWER2:
+        return CASTLE_BOTTOM_ARCHER_TOWER_POS;
+    case CastleDefenseElement::WALL1:
+        return CASTLE_FIRST_TOP_WALL_POS;
+    case CastleDefenseElement::WALL2:
+        return CASTLE_SECOND_TOP_WALL_POS;
+    case CastleDefenseElement::WALL3:
+        return CASTLE_THIRD_TOP_WALL_POS;
+    case CastleDefenseElement::WALL4:
+        return CASTLE_FOURTH_TOP_WALL_POS;
+    case CastleDefenseElement::TOP_BRIDGE_TOWER:
+        return CASTLE_TOP_GATE_TOWER_POS;
+    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER:
+        return CASTLE_BOTTOM_GATE_TOWER_POS;
     default:
+        assert( 0 );
         break;
     }
 
-    return CastleDefenseElement::NONE;
+    return 0;
 }
 
 const HeroBase * Battle::Arena::getCommander( const int color ) const

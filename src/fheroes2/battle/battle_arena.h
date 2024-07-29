@@ -212,7 +212,8 @@ namespace Battle
             return _covrIcnId;
         }
 
-        uint32_t GetCastleTargetValue( const CastleDefenseElement target ) const;
+        // Returns the remaining number of hitpoints of the given castle defense structure.
+        int getCastleDefenseElementCondition( const CastleDefenseElement target ) const;
 
         int32_t GetFreePositionNearHero( const int heroColor ) const;
 
@@ -243,9 +244,11 @@ namespace Battle
         void UnitTurn( const Units & orderHistory );
 
         void TowerAction( const Tower & );
-
-        void setCastleTargetValue( const CastleDefenseElement target, const int value );
         void CatapultAction();
+
+        // Applies the specified damage to the given castle defense structure. It's the caller's responsibility to make sure that this defense structure still has
+        // enough hitpoints.
+        void applyDamageToCastleDefenseElement( const CastleDefenseElement target, const int damage );
 
         TargetsInfo GetTargetsForDamage( const Unit & attacker, Unit & defender, const int32_t dst, const int dir ) const;
         TargetsInfo GetTargetsForSpell( const HeroBase * hero, const Spell & spell, const int32_t dst, bool applyRandomMagicResistance, bool * playResistSound );
@@ -256,7 +259,7 @@ namespace Battle
         TargetsInfo TargetsForChainLightning( const HeroBase * hero, const int32_t attackedTroopIndex, const bool applyRandomMagicResistance );
         std::vector<Unit *> FindChainLightningTargetIndexes( const HeroBase * hero, Unit * firstUnit, const bool applyRandomMagicResistance );
 
-        CastleDefenseElement getEarthQuakeTarget( const size_t position ) const;
+        static size_t getPositionOfCastleDefenseElement( const CastleDefenseElement element );
 
         void ApplyActionRetreat( const Command & cmd );
         void ApplyActionSurrender( const Command & cmd );

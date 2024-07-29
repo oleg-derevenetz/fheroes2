@@ -107,7 +107,7 @@ fheroes2::Point Battle::Tower::GetPortPosition() const
     return {};
 }
 
-void Battle::Tower::SetDestroy()
+void Battle::Tower::SetDestroyed()
 {
     switch ( _towerType ) {
     case TowerType::TWR_LEFT:

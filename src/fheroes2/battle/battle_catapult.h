@@ -26,6 +26,7 @@
 
 #include <cstdint>
 #include <map>
+#include <vector>
 
 #include "battle.h"
 #include "math_base.h"
@@ -47,6 +48,7 @@ namespace Battle
 
         Catapult & operator=( const Catapult & ) = delete;
 
+        static const std::vector<CastleDefenseElement> & getAllowedTargets();
         static CastleDefenseElement GetTarget( const std::map<CastleDefenseElement, uint32_t> & stateOfCatapultTargets,
                                                Rand::DeterministicRandomGenerator & randomGenerator );
         static fheroes2::Point GetTargetPosition( const CastleDefenseElement target, const bool hit );

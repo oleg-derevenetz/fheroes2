@@ -76,6 +76,14 @@ uint32_t Battle::Catapult::GetDamage( Rand::DeterministicRandomGenerator & rando
     return 1;
 }
 
+const std::vector<Battle::CastleDefenseElement> & Battle::Catapult::getAllowedTargets()
+{
+    static const std::vector<CastleDefenseElement> allowedTargets{ CastleDefenseElement::WALL1,  CastleDefenseElement::WALL2,        CastleDefenseElement::WALL3,
+                                                                   CastleDefenseElement::WALL4,  CastleDefenseElement::TOWER1,       CastleDefenseElement::TOWER2,
+                                                                   CastleDefenseElement::BRIDGE, CastleDefenseElement::CENTRAL_TOWER };
+    return allowedTargets;
+}
+
 fheroes2::Point Battle::Catapult::GetTargetPosition( const CastleDefenseElement target, const bool hit )
 {
     switch ( target ) {
