@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <map>
 #include <memory>
 #include <ostream>
 #include <set>
@@ -1274,28 +1275,28 @@ void Battle::Arena::ApplyActionCatapult( Command & cmd )
         return;
     }
 
-    const auto checkParameters = [this]( const CastleDefenseElement target, const int damage ) {
+    const auto checkParameters = [this]( const CastleDefenseStructure target, const int damage ) {
         if ( damage <= 0 ) {
             return false;
         }
 
-        if ( getCastleDefenseElementCondition( target ) < damage ) {
+        const std::vector<CastleDefenseStructure> & allowedTargets = Catapult::getAllowedTargets();
+
+        if ( std::find( allowedTargets.begin(), allowedTargets.end(), target ) == allowedTargets.end() ) {
             return false;
         }
 
-        const std::vector<CastleDefenseElement> & allowedTargets = Catapult::getAllowedTargets();
-
-        return ( std::find( allowedTargets.begin(), allowedTargets.end(), target ) != allowedTargets.end() );
+        return ( damage <= getCastleDefenseStructureCondition( target, SiegeWeaponType::Catapult ) );
     };
 
     uint32_t shots = cmd.GetNextValue();
 
     while ( shots-- ) {
-        const CastleDefenseElement target = static_cast<CastleDefenseElement>( cmd.GetNextValue() );
+        const CastleDefenseStructure target = static_cast<CastleDefenseStructure>( cmd.GetNextValue() );
         const int damage = cmd.GetNextValue();
         const bool hit = ( cmd.GetNextValue() != 0 );
 
-        if ( target == CastleDefenseElement::NONE ) {
+        if ( target == CastleDefenseStructure::NONE ) {
             continue;
         }
 
@@ -1322,7 +1323,7 @@ void Battle::Arena::ApplyActionCatapult( Command & cmd )
             continue;
         }
 
-        applyDamageToCastleDefenseElement( target, damage );
+        applyDamageToCastleDefenseStructure( target, damage );
 
         if ( _interface ) {
             // Continue animating the smoke cloud after changing the "health" of the building.
@@ -1566,27 +1567,27 @@ void Battle::Arena::ApplyActionSpellEarthQuake( const Command & /* cmd */ )
 
     const auto [minDamage, maxDamage] = getEarthquakeDamageRange( commander );
 
-    std::map<CastleDefenseElement, int> earthQuakeDamage;
+    std::map<CastleDefenseStructure, int> earthQuakeDamage;
 
-    for ( const CastleDefenseElement target :
-          { CastleDefenseElement::WALL1, CastleDefenseElement::WALL2, CastleDefenseElement::WALL3, CastleDefenseElement::WALL4, CastleDefenseElement::TOWER1,
-            CastleDefenseElement::TOWER2, CastleDefenseElement::BRIDGE, CastleDefenseElement::TOP_BRIDGE_TOWER, CastleDefenseElement::BOTTOM_BRIDGE_TOWER } ) {
-        const int targetCondition = getCastleDefenseElementCondition( target );
+    for ( const CastleDefenseStructure target :
+          { CastleDefenseStructure::WALL1, CastleDefenseStructure::WALL2, CastleDefenseStructure::WALL3, CastleDefenseStructure::WALL4, CastleDefenseStructure::TOWER1,
+            CastleDefenseStructure::TOWER2, CastleDefenseStructure::BRIDGE, CastleDefenseStructure::TOP_BRIDGE_TOWER, CastleDefenseStructure::BOTTOM_BRIDGE_TOWER } ) {
+        const int targetCondition = getCastleDefenseStructureCondition( target, SiegeWeaponType::EarthquakeSpell );
         assert( targetCondition >= 0 );
 
         if ( targetCondition == 0 ) {
             continue;
         }
 
-        const int damage = [this, minDamage = minDamage, maxDamage = maxDamage, target]() {
+        const int damage = [this, minDmg = minDamage, maxDmg = maxDamage, target]() {
             // There is a 0.5 multiplied by a spell power dependent chance to destroy the bridge by the Earthquake spell.
             // In example, with low spell power there is 25% chance (0.5*0.5=0.25) to destroy the bridge,
             // with very high spell power it is 50% chance (0.5*1=0.5).
-            if ( target == CastleDefenseElement::BRIDGE && _randomGenerator.Get( 0, 1 ) == 0 ) {
+            if ( target == CastleDefenseStructure::BRIDGE && _randomGenerator.Get( 0, 1 ) == 0 ) {
                 return 0;
             }
 
-            return static_cast<int>( _randomGenerator.Get( minDamage, maxDamage ) );
+            return static_cast<int>( _randomGenerator.Get( minDmg, maxDmg ) );
         }();
         assert( damage >= 0 );
 
@@ -1600,7 +1601,7 @@ void Battle::Arena::ApplyActionSpellEarthQuake( const Command & /* cmd */ )
         }
     }
 
-    std::vector<CastleDefenseElement> targets;
+    std::vector<CastleDefenseStructure> targets;
     targets.reserve( earthQuakeDamage.size() );
 
     for ( const auto & [target, dummy] : earthQuakeDamage ) {
@@ -1616,7 +1617,7 @@ void Battle::Arena::ApplyActionSpellEarthQuake( const Command & /* cmd */ )
 
     // Apply new conditions for the damaged targets.
     for ( const auto & [target, damage] : earthQuakeDamage ) {
-        applyDamageToCastleDefenseElement( target, damage );
+        applyDamageToCastleDefenseStructure( target, damage );
     }
 
     if ( _interface ) {

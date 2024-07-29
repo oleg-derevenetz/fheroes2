@@ -65,6 +65,12 @@ namespace Battle
 
     enum class TowerType : uint8_t;
 
+    enum class SiegeWeaponType
+    {
+        Catapult,
+        EarthquakeSpell
+    };
+
     class Actions : public std::list<Command>
     {};
 
@@ -212,9 +218,6 @@ namespace Battle
             return _covrIcnId;
         }
 
-        // Returns the remaining number of hitpoints of the given castle defense structure.
-        int getCastleDefenseElementCondition( const CastleDefenseElement target ) const;
-
         int32_t GetFreePositionNearHero( const int heroColor ) const;
 
         static Board * GetBoard();
@@ -246,9 +249,12 @@ namespace Battle
         void TowerAction( const Tower & );
         void CatapultAction();
 
-        // Applies the specified damage to the given castle defense structure. It's the caller's responsibility to make sure that this defense structure still has
-        // enough hitpoints.
-        void applyDamageToCastleDefenseElement( const CastleDefenseElement target, const int damage );
+        // Returns the remaining number of hitpoints of the given castle defense structure from the point of view of the given siege weapon.
+        int getCastleDefenseStructureCondition( const CastleDefenseStructure target, const SiegeWeaponType siegeWeapon ) const;
+
+        // Applies the specified damage to the given castle defense structure. It's the caller's responsibility to make sure that this defense
+        // structure still has enough hitpoints.
+        void applyDamageToCastleDefenseStructure( const CastleDefenseStructure target, const int damage );
 
         TargetsInfo GetTargetsForDamage( const Unit & attacker, Unit & defender, const int32_t dst, const int dir ) const;
         TargetsInfo GetTargetsForSpell( const HeroBase * hero, const Spell & spell, const int32_t dst, bool applyRandomMagicResistance, bool * playResistSound );
@@ -259,7 +265,7 @@ namespace Battle
         TargetsInfo TargetsForChainLightning( const HeroBase * hero, const int32_t attackedTroopIndex, const bool applyRandomMagicResistance );
         std::vector<Unit *> FindChainLightningTargetIndexes( const HeroBase * hero, Unit * firstUnit, const bool applyRandomMagicResistance );
 
-        static size_t getPositionOfCastleDefenseElement( const CastleDefenseElement element );
+        static size_t getPositionOfCastleDefenseStructure( const CastleDefenseStructure structure );
 
         void ApplyActionRetreat( const Command & cmd );
         void ApplyActionSurrender( const Command & cmd );

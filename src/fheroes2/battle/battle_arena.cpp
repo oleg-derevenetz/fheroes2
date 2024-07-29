@@ -653,9 +653,9 @@ void Battle::Arena::CatapultAction()
 
     uint32_t shots = _catapult->GetShots();
 
-    std::map<CastleDefenseElement, uint32_t> stateOfCatapultTargets;
-    for ( const CastleDefenseElement target : Catapult::getAllowedTargets() ) {
-        const auto [dummy, inserted] = stateOfCatapultTargets.try_emplace( target, getCastleDefenseElementCondition( target ) );
+    std::map<CastleDefenseStructure, int> stateOfCatapultTargets;
+    for ( const CastleDefenseStructure target : Catapult::getAllowedTargets() ) {
+        const auto [dummy, inserted] = stateOfCatapultTargets.try_emplace( target, getCastleDefenseStructureCondition( target, SiegeWeaponType::Catapult ) );
         if ( !inserted ) {
             assert( 0 );
         }
@@ -666,8 +666,8 @@ void Battle::Arena::CatapultAction()
     cmd << shots;
 
     while ( shots-- ) {
-        const CastleDefenseElement target = Catapult::GetTarget( stateOfCatapultTargets, _randomGenerator );
-        const uint32_t damage = std::min( _catapult->GetDamage( _randomGenerator ), stateOfCatapultTargets[target] );
+        const CastleDefenseStructure target = Catapult::GetTarget( stateOfCatapultTargets, _randomGenerator );
+        const int damage = std::min( _catapult->GetDamage( _randomGenerator ), stateOfCatapultTargets[target] );
         const bool hit = _catapult->IsNextShotHit( _randomGenerator );
 
         using TargetUnderlyingType = std::underlying_type_t<decltype( target )>;
@@ -985,17 +985,17 @@ Battle::Indexes Battle::Arena::GraveyardOccupiedCells() const
     return graveyard.GetOccupiedCells();
 }
 
-void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElement target, const int damage )
+void Battle::Arena::applyDamageToCastleDefenseStructure( const CastleDefenseStructure target, const int damage )
 {
     assert( castle != nullptr );
 
     switch ( target ) {
     // Sections of the castle wall can be completely destroyed and it will be possible to pass through the corresponding cells.
-    case CastleDefenseElement::WALL1:
-    case CastleDefenseElement::WALL2:
-    case CastleDefenseElement::WALL3:
-    case CastleDefenseElement::WALL4: {
-        const size_t position = getPositionOfCastleDefenseElement( target );
+    case CastleDefenseStructure::WALL1:
+    case CastleDefenseStructure::WALL2:
+    case CastleDefenseStructure::WALL3:
+    case CastleDefenseStructure::WALL4: {
+        const size_t position = getPositionOfCastleDefenseStructure( target );
         const int condition = board[position].GetObject();
 
         assert( damage > 0 && damage <= condition );
@@ -1005,9 +1005,9 @@ void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElemen
     }
 
     // Tete-de-pont towers can be damaged, but not fully demolished (it is still impossible to pass through the corresponding cells).
-    case CastleDefenseElement::TOP_BRIDGE_TOWER:
-    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER: {
-        const size_t position = getPositionOfCastleDefenseElement( target );
+    case CastleDefenseStructure::TOP_BRIDGE_TOWER:
+    case CastleDefenseStructure::BOTTOM_BRIDGE_TOWER: {
+        const size_t position = getPositionOfCastleDefenseStructure( target );
         const int condition = board[position].GetObject();
 
         assert( damage == 1 && damage < condition );
@@ -1018,16 +1018,16 @@ void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElemen
 
     // Wall towers (with or without built turret) can be damaged (and they will stop shooting in this case), but not fully demolished
     // (it is still impossible to pass through the corresponding cells).
-    case CastleDefenseElement::TOWER1:
-    case CastleDefenseElement::TOWER2:
-    case CastleDefenseElement::CENTRAL_TOWER: {
+    case CastleDefenseStructure::TOWER1:
+    case CastleDefenseStructure::TOWER2:
+    case CastleDefenseStructure::CENTRAL_TOWER: {
         const size_t towerIdx = [target]() -> size_t {
             switch ( target ) {
-            case CastleDefenseElement::TOWER1:
+            case CastleDefenseStructure::TOWER1:
                 return 0;
-            case CastleDefenseElement::TOWER2:
+            case CastleDefenseStructure::TOWER2:
                 return 2;
-            case CastleDefenseElement::CENTRAL_TOWER:
+            case CastleDefenseStructure::CENTRAL_TOWER:
                 return 1;
             default:
                 assert( 0 );
@@ -1042,18 +1042,22 @@ void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElemen
                 return false;
             }
 
-            if ( target == CastleDefenseElement::CENTRAL_TOWER ) {
+            if ( target == CastleDefenseStructure::CENTRAL_TOWER ) {
                 return _towers[towerIdx] && _towers[towerIdx]->isValid();
             }
 
-            const size_t position = getPositionOfCastleDefenseElement( target );
+            const size_t position = getPositionOfCastleDefenseStructure( target );
             const int condition = board[position].GetObject();
 
             if ( damage >= condition ) {
                 return false;
             }
 
-            if ( !_towers[towerIdx] || _towers[towerIdx]->isValid() ) {
+            if ( !_towers[towerIdx] ) {
+                return ( condition == 1 || condition == 2 );
+            }
+
+            if ( _towers[towerIdx]->isValid() ) {
                 return condition == 2;
             }
 
@@ -1065,7 +1069,7 @@ void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElemen
             break;
         }
 
-        const size_t position = getPositionOfCastleDefenseElement( target );
+        const size_t position = getPositionOfCastleDefenseStructure( target );
         const int condition = board[position].GetObject();
 
         board[position].SetObject( condition - damage );
@@ -1073,7 +1077,7 @@ void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElemen
     }
 
     // Castle bridge can be completely destroyed and it will be possible to pass through the corresponding cell.
-    case CastleDefenseElement::BRIDGE: {
+    case CastleDefenseStructure::BRIDGE: {
         assert( damage == 1 && _bridge && _bridge->isValid() );
 
         _bridge->SetDestroyed();
@@ -1085,16 +1089,16 @@ void Battle::Arena::applyDamageToCastleDefenseElement( const CastleDefenseElemen
     }
 }
 
-int Battle::Arena::getCastleDefenseElementCondition( const CastleDefenseElement target ) const
+int Battle::Arena::getCastleDefenseStructureCondition( const CastleDefenseStructure target, const SiegeWeaponType siegeWeapon ) const
 {
     assert( castle != nullptr );
 
     switch ( target ) {
-    case CastleDefenseElement::WALL1:
-    case CastleDefenseElement::WALL2:
-    case CastleDefenseElement::WALL3:
-    case CastleDefenseElement::WALL4: {
-        const size_t position = getPositionOfCastleDefenseElement( target );
+    case CastleDefenseStructure::WALL1:
+    case CastleDefenseStructure::WALL2:
+    case CastleDefenseStructure::WALL3:
+    case CastleDefenseStructure::WALL4: {
+        const size_t position = getPositionOfCastleDefenseStructure( target );
         const int condition = board[position].GetObject();
 
         assert( condition >= 0 );
@@ -1102,9 +1106,11 @@ int Battle::Arena::getCastleDefenseElementCondition( const CastleDefenseElement 
         return condition;
     }
 
-    case CastleDefenseElement::TOP_BRIDGE_TOWER:
-    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER: {
-        const size_t position = getPositionOfCastleDefenseElement( target );
+    case CastleDefenseStructure::TOP_BRIDGE_TOWER:
+    case CastleDefenseStructure::BOTTOM_BRIDGE_TOWER: {
+        assert( siegeWeapon == SiegeWeaponType::EarthquakeSpell );
+
+        const size_t position = getPositionOfCastleDefenseStructure( target );
         const int condition = board[position].GetObject();
 
         assert( condition == 1 || condition == 2 );
@@ -1112,16 +1118,16 @@ int Battle::Arena::getCastleDefenseElementCondition( const CastleDefenseElement 
         return condition - 1;
     }
 
-    case CastleDefenseElement::TOWER1:
-    case CastleDefenseElement::TOWER2:
-    case CastleDefenseElement::CENTRAL_TOWER: {
+    case CastleDefenseStructure::TOWER1:
+    case CastleDefenseStructure::TOWER2:
+    case CastleDefenseStructure::CENTRAL_TOWER: {
         const size_t towerIdx = [target]() -> size_t {
             switch ( target ) {
-            case CastleDefenseElement::TOWER1:
+            case CastleDefenseStructure::TOWER1:
                 return 0;
-            case CastleDefenseElement::TOWER2:
+            case CastleDefenseStructure::TOWER2:
                 return 2;
-            case CastleDefenseElement::CENTRAL_TOWER:
+            case CastleDefenseStructure::CENTRAL_TOWER:
                 return 1;
             default:
                 assert( 0 );
@@ -1131,25 +1137,39 @@ int Battle::Arena::getCastleDefenseElementCondition( const CastleDefenseElement 
             return 0;
         }();
 
-        assert( ( [this, target, towerIdx]() {
-            if ( target == CastleDefenseElement::CENTRAL_TOWER ) {
-                return true;
+        assert( ( [this, target, siegeWeapon, towerIdx]() {
+            if ( target == CastleDefenseStructure::CENTRAL_TOWER ) {
+                return ( siegeWeapon == SiegeWeaponType::Catapult );
             }
 
-            const size_t position = getPositionOfCastleDefenseElement( target );
+            const size_t position = getPositionOfCastleDefenseStructure( target );
             const int condition = board[position].GetObject();
 
-            if ( !_towers[towerIdx] || _towers[towerIdx]->isValid() ) {
+            if ( !_towers[towerIdx] ) {
+                return ( condition == 1 || condition == 2 );
+            }
+
+            if ( _towers[towerIdx]->isValid() ) {
                 return condition == 2;
             }
 
             return condition == 1;
         }() ) );
 
-        return _towers[towerIdx] && _towers[towerIdx]->isValid() ? 1 : 0;
+        switch ( siegeWeapon ) {
+        case SiegeWeaponType::Catapult:
+            return _towers[towerIdx] && _towers[towerIdx]->isValid() ? 1 : 0;
+        case SiegeWeaponType::EarthquakeSpell:
+            return board[getPositionOfCastleDefenseStructure( target )].GetObject() - 1;
+        default:
+            assert( 0 );
+            break;
+        }
+
+        break;
     }
 
-    case CastleDefenseElement::BRIDGE: {
+    case CastleDefenseStructure::BRIDGE: {
         assert( _bridge );
 
         return _bridge->isValid() ? 1 : 0;
@@ -1162,26 +1182,26 @@ int Battle::Arena::getCastleDefenseElementCondition( const CastleDefenseElement 
     return 0;
 }
 
-size_t Battle::Arena::getPositionOfCastleDefenseElement( const CastleDefenseElement element )
+size_t Battle::Arena::getPositionOfCastleDefenseStructure( const CastleDefenseStructure structure )
 {
-    switch ( element ) {
-    case CastleDefenseElement::BRIDGE:
+    switch ( structure ) {
+    case CastleDefenseStructure::BRIDGE:
         return CASTLE_GATE_POS;
-    case CastleDefenseElement::TOWER1:
+    case CastleDefenseStructure::TOWER1:
         return CASTLE_TOP_ARCHER_TOWER_POS;
-    case CastleDefenseElement::TOWER2:
+    case CastleDefenseStructure::TOWER2:
         return CASTLE_BOTTOM_ARCHER_TOWER_POS;
-    case CastleDefenseElement::WALL1:
+    case CastleDefenseStructure::WALL1:
         return CASTLE_FIRST_TOP_WALL_POS;
-    case CastleDefenseElement::WALL2:
+    case CastleDefenseStructure::WALL2:
         return CASTLE_SECOND_TOP_WALL_POS;
-    case CastleDefenseElement::WALL3:
+    case CastleDefenseStructure::WALL3:
         return CASTLE_THIRD_TOP_WALL_POS;
-    case CastleDefenseElement::WALL4:
+    case CastleDefenseStructure::WALL4:
         return CASTLE_FOURTH_TOP_WALL_POS;
-    case CastleDefenseElement::TOP_BRIDGE_TOWER:
+    case CastleDefenseStructure::TOP_BRIDGE_TOWER:
         return CASTLE_TOP_GATE_TOWER_POS;
-    case CastleDefenseElement::BOTTOM_BRIDGE_TOWER:
+    case CastleDefenseStructure::BOTTOM_BRIDGE_TOWER:
         return CASTLE_BOTTOM_GATE_TOWER_POS;
     default:
         assert( 0 );
