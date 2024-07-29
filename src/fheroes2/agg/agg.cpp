@@ -37,7 +37,7 @@ namespace
     fheroes2::AGGFile heroes2x_agg;
 }
 
-std::vector<uint8_t> AGG::getDataFromAggFile( const std::string & key )
+std::vector<uint8_t> AGG::getDataFromAggFile( const std::string & key)
 {
     if ( heroes2x_agg.isGood() ) {
         // Make sure that the below container is not const and not a reference
