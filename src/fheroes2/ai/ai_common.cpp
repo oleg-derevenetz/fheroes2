@@ -224,6 +224,9 @@ std::optional<Funds> AI::calculateMarketplaceTransaction( const Kingdom & kingdo
     if ( marketplaceCount == 0 ) {
         return {};
     }
+    else {
+        return {};
+    }
 
     std::map<int, int32_t> plannedBalance;
     {
@@ -253,7 +256,7 @@ std::optional<Funds> AI::calculateMarketplaceTransaction( const Kingdom & kingdo
 
         assert( fromResBalanceAmount > 0 && toResBalanceAmount < 0 );
 
-        const int32_t tradeCost = fheroes2::getTradeCost( marketplaceCount, fromRes, toRes );
+        const int32_t tradeCost =  fheroes2::getTradeCost( marketplaceCount, fromRes, toRes );
         assert( tradeCost > 0 );
 
         int32_t * fromResTransactionAmount = plannedTransaction.GetPtr( fromRes );
