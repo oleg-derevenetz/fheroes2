@@ -1,0 +1,77 @@
+name: CodeQL Analyzer
+
+on:
+  workflow_call:
+
+permissions:
+  security-events: write
+
+jobs:
+  codeql-cpp:
+    name: CodeQL Analyzer (C++)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      CODEQL_LANGUAGE: c-cpp
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get -y update
+        sudo apt-get -y install libsdl2-dev libsdl2-mixer-dev libsdl2-image-dev gettext
+    - uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ env.CODEQL_LANGUAGE }}
+        build-mode: manual
+    - name: Build
+      run: |
+        make -j 2
+      env:
+        FHEROES2_STRICT_COMPILATION: ON
+        FHEROES2_WITH_TOOLS: ON
+        FHEROES2_WITH_IMAGE: ON
+    - uses: github/codeql-action/analyze@v3
+      with:
+        category: /language:${{ env.CODEQL_LANGUAGE }}
+  codeql-java:
+    name: CodeQL Analyzer (Java)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      CODEQL_LANGUAGE: java-kotlin
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        bash script/android/install_packages.sh
+    - uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ env.CODEQL_LANGUAGE }}
+        build-mode: none
+    - uses: github/codeql-action/analyze@v3
+      with:
+        category: /language:${{ env.CODEQL_LANGUAGE }}
+  codeql-python:
+    name: CodeQL Analyzer (Python)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    env:
+      CODEQL_LANGUAGE: python
+    steps:
+    - uses: actions/checkout@v4
+    - uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ env.CODEQL_LANGUAGE }}
+        build-mode: none
+    - uses: github/codeql-action/analyze@v3
+      with:
+        category: /language:${{ env.CODEQL_LANGUAGE }}

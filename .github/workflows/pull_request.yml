@@ -10,6 +10,7 @@ concurrency:
 
 permissions:
   contents: write
+  security-events: write
 
 jobs:
   style:
@@ -20,6 +21,11 @@ jobs:
     needs:
     - style
     uses: ./.github/workflows/clang_analyzer.yml
+  codeql:
+    name: CodeQL Analyzer
+    needs:
+    - style
+    uses: ./.github/workflows/codeql.yml
   iwyu:
     name: IWYU
     needs:
