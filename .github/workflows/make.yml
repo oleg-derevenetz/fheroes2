@@ -260,6 +260,7 @@ jobs:
       run: |
         export PATH="$VITASDK/bin:$PATH"
         make -f Makefile.vita -j 2
+        make -f Makefile.vita clean
       env:
         FHEROES2_STRICT_COMPILATION: ON
         VITASDK: /usr/local/vitasdk
@@ -309,6 +310,7 @@ jobs:
       run: |
         export PATH="$DEVKITPRO/tools/bin:$DEVKITPRO/portlibs/switch/bin:$DEVKITPRO/devkitA64/bin:$PATH"
         make -f Makefile.switch -j 2
+        make -f Makefile.switch clean
       env:
         FHEROES2_STRICT_COMPILATION: ON
         DEVKITPRO: /opt/devkitpro
