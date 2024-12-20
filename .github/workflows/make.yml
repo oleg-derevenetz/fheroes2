@@ -54,7 +54,7 @@ jobs:
             FHEROES2_WITH_DEBUG: ON
             FHEROES2_WITH_ASAN: ON
         - name: Linux ARM64 SDL2 Release
-          os: ubuntu-22.04
+          os: ubuntu-24.04
           dependencies: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libsdl2-dev:arm64 libsdl2-mixer-dev:arm64 libsdl2-image-dev:arm64 libpng-dev:arm64 gettext
           env:
             FHEROES2_STRICT_COMPILATION: ON
@@ -90,7 +90,7 @@ jobs:
           release_name: Ubuntu ARM64 (Linux) build with SDL2 (latest commit)
           release_tag: fheroes2-linux-arm-sdl2_dev
         - name: Linux ARM64 SDL2 Debug
-          os: ubuntu-latest
+          os: ubuntu-24.04
           dependencies: gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libsdl2-dev:arm64 libsdl2-mixer-dev:arm64 libsdl2-image-dev:arm64 libpng-dev:arm64 gettext
           env:
             FHEROES2_STRICT_COMPILATION: ON
@@ -152,7 +152,7 @@ jobs:
     - name: Install dependencies (Linux)
       if: ${{ startsWith( matrix.config.os, 'ubuntu-' ) }}
       run: |
-        if [[ "${{ matrix.config.name }}" == *ARM64* ]]
+        if [[ "${{ matrix.config.name }}" == *ARM65* ]]
         then
           sudo sed -i -e 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
           sudo dpkg --add-architecture arm64
