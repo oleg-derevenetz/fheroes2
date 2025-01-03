@@ -18,12 +18,14 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
-CCFLAGS := --use-port=sdl2 \
+CCFLAGS := $(CCFLAGS) \
+	--use-port=sdl2 \
 	--use-port=sdl2_mixer \
 	--use-port=zlib \
 	-Wno-variadic-macro-arguments-omitted
 
-LDFLAGS := --preload-file ../../../files/data/resurrection.h2d@/files/data/resurrection.h2d \
+LDFLAGS := $(LDFLAGS) \
+	--preload-file ../../../files/data/resurrection.h2d@/files/data/resurrection.h2d \
 	--preload-file ../../../files/lang/@/files/lang/ \
 	--preload-file ../../../files/soundfonts/fheroes2.sf3@/files/soundfonts/fheroes2.sf3 \
 	-sASYNCIFY \
