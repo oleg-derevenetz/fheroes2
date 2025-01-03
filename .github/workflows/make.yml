@@ -356,6 +356,7 @@ jobs:
       run: |
         sudo apt-get -y update
         sudo apt-get -y install gettext p7zip-full
+        emsdk install tot
     - name: Build
       run: |
         emmake make -f Makefile.emscripten -j "$(nproc)"
