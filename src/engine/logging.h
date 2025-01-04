@@ -123,17 +123,25 @@ namespace Logging
 #include <syslog.h>
 #define COUT( x )                                                                                                                                                        \
     {                                                                                                                                                                    \
-        std::ostringstream logMessage;                                                                                                                                   \
-        logMessage << x;                                                                                                                                                 \
-        syslog( LOG_WARNING, "fheroes2_log: %s", logMessage.str().c_str() );                                                                                             \
+        std::ostringstream osss;                                                                                                                                         \
+        osss << x;                                                                                                                                                       \
+        syslog( LOG_WARNING, "fheroes2_log: %s", osss.str().c_str() );                                                                                                   \
     }
 #elif defined( ANDROID )
 #include <android/log.h>
 #define COUT( x )                                                                                                                                                        \
     {                                                                                                                                                                    \
         std::ostringstream osss;                                                                                                                                         \
-        osss << x << std::endl;                                                                                                                                          \
+        osss << x;                                                                                                                                                       \
         __android_log_print( ANDROID_LOG_INFO, "fheroes2", "%s", osss.str().c_str() );                                                                                   \
+    }
+#elif defined( __EMSCRIPTEN__ )
+#include <emscripten.h>
+#define COUT( x )                                                                                                                                                        \
+    {                                                                                                                                                                    \
+        std::ostringstream osss;                                                                                                                                         \
+        osss << x;                                                                                                                                                       \
+        emscripten_out( osss.str().c_str() );                                                                                                                            \
     }
 #else // Default: log to STDERR
 #define COUT( x )                                                                                                                                                        \
