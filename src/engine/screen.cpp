@@ -815,6 +815,19 @@ namespace
                 return;
             }
 
+#ifdef __EMSCRIPTEN__
+            assert( _window != nullptr && _surface != nullptr );
+
+            int windowWidth;
+            int windowHeight;
+
+            SDL_GetWindowSize( _window, &windowWidth, &windowHeight );
+
+            fheroes2::ResolutionInfo resolutionInfo{ _surface->w, _surface->h, windowWidth, windowHeight };
+
+            clear();
+            allocate( resolutionInfo, !isFullScreen() );
+#else
             uint32_t flags = SDL_GetWindowFlags( _window );
             if ( flags & ( SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP ) ) {
                 flags &= ~( SDL_WINDOW_FULLSCREEN | SDL_WINDOW_FULLSCREEN_DESKTOP );
@@ -858,6 +871,7 @@ namespace
 
             _retrieveWindowInfo();
             _toggleMouseCaptureMode();
+#endif
         }
 
         bool isFullScreen() const override
