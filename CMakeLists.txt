@@ -53,13 +53,13 @@ set_property(CACHE USE_SDL_VERSION PROPERTY STRINGS SDL2)
 #
 # Library & feature detection
 #
-find_package(${USE_SDL_VERSION} REQUIRED)
-find_package(${USE_SDL_VERSION}_mixer REQUIRED)
+find_package(${USE_SDL_VERSION} CONFIG REQUIRED)
+find_package(${USE_SDL_VERSION}_mixer CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(Threads)
 
 if(ENABLE_IMAGE)
-	find_package(${USE_SDL_VERSION}_image REQUIRED)
+	find_package(${USE_SDL_VERSION}_image CONFIG REQUIRED)
 	find_package(PNG REQUIRED)
 endif(ENABLE_IMAGE)
 
