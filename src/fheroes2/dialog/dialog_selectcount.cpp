@@ -163,10 +163,12 @@ bool Dialog::SelectCount( std::string header, const int32_t min, const int32_t m
             selectedValue = valueSelectionElement.getValue();
             needRedraw = true;
         }
-
-        if ( uiElement && ( le.isMouseLeftButtonReleasedInArea( uiRect ) || le.isMouseRightButtonPressedInArea( uiRect ) ) ) {
+        else if ( uiElement && ( le.isMouseLeftButtonReleasedInArea( uiRect ) || le.isMouseRightButtonPressedInArea( uiRect ) ) ) {
             uiElement->processEvents( uiOffset );
             display.render();
+        }
+        else {
+            result = btnGroups.processEvents();
         }
 
         if ( needRedraw ) {
@@ -174,8 +176,6 @@ bool Dialog::SelectCount( std::string header, const int32_t min, const int32_t m
             valueSelectionElement.draw( display );
             display.render( redrawMinMax ? interactionElementsRect : selectionBoxArea );
         }
-
-        result = btnGroups.processEvents();
     }
 
     selectedValue = ( result == Dialog::OK ) ? valueSelectionElement.getValue() : 0;
