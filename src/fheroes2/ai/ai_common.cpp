@@ -261,6 +261,7 @@ std::optional<Funds> AI::calculateMarketplaceTransaction( const Kingdom & kingdo
 
         assert( fromResBalanceAmount > 0 && toResBalanceAmount < 0 );
 
+
         const int32_t tradeCost = fheroes2::getTradeCost( marketplaceCount, fromRes, toRes );
         assert( tradeCost > 0 );
 
