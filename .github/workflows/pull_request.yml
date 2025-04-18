@@ -49,12 +49,14 @@ jobs:
     name: CodeChecker
     if: ${{ needs.dispatcher.outputs.runCxxAnalyzers == 'YES' }}
     needs:
+    - dispatcher
     - style
     uses: ./.github/workflows/codechecker.yml
   iwyu:
     name: IWYU
     if: ${{ needs.dispatcher.outputs.runCxxAnalyzers == 'YES' }}
     needs:
+    - dispatcher
     - style
     uses: ./.github/workflows/iwyu.yml
   msvc:
