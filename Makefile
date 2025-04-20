@@ -18,6 +18,7 @@
 #   59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 ###########################################################################
 
+
 # Options:
 #
 # FHEROES2_STRICT_COMPILATION: build in strict compilation mode (turns warnings into errors)
