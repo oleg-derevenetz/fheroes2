@@ -81,3 +81,22 @@ jobs:
     - name: Install
       run: |
         cmake.exe --install build --config Debug
+  cmake-linux-vcpkg:
+    name: CMake (Linux vcpkg)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: |
+        sudo apt-get install gettext
+        sudo vcpkg --triplet x64-linux-dynamic install sdl2 sdl2-mixer sdl2-image zlib
+    - name: Build
+      run: |
+        cmake -B build -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DENABLE_IMAGE=ON \
+                       -DENABLE_TOOLS=ON -DCMAKE_TOOLCHAIN_FILE="$VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" \
+                       -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic
+        cmake --build build --config Debug
